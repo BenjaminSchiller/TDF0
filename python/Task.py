@@ -15,7 +15,7 @@ class Task:
 		self.get_keys = "worker input output log error client started finished runAfter runBefore timeout waitAfterSuccess waitAfterSetupError waitAfterRunError session".split()
 		self.arg = dict((k, v) for k, v in arg.items() if k in self.set_keys)
 		self.set('session', datetime.datetime.today().strftime("%Y-%m-%d"))
-
+		self.path = "tdf.%s.task.%s"
 
 	def asString(self):
 		str = []
@@ -55,12 +55,12 @@ class Task:
 
 		if (index is None):
 			if (not self.get('index')):
-				raise TaskError('Index not provided.')
+				self.set('index',redis.incr("tdf.%s.index" % namespace))
 		else:
 			self.set('index', index)
 
 		# set task information
-		hashKey = "tdf.%s.task.%s" % (self.get('namespace'), self.get('index'))
+		hashKey = self.path % (self.get('namespace'), self.get('index'))
 		for key in self.arg:
 			if (key not in ['index', 'namespace']):
 				redis.hset(hashKey, key, self.arg[key])
@@ -74,7 +74,7 @@ class Task:
 		"""
 		self.set('namespace', namespace)
 		self.set('index', index)
-		hashKey = "tdf.%s.task.%s" % (namespace, index)
+		hashKey = self.path % (namespace, index)
 
 		for key in self.get_keys:
 			value = redis.hget(hashKey, key)
