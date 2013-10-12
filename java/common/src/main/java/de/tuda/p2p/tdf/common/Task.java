@@ -98,7 +98,7 @@ public class Task {
 	 *            The index of the task
 	 */
 	public Task(Jedis jedis, String namespace, Long index) {
-		String hashKey = "tdf." + namespace + ".task." + index;
+		String hashKey = HashKey(namespace,index);
 		setIndex(index);
 		setNamespace(namespace);
 
@@ -194,7 +194,7 @@ public class Task {
 		setNamespace(namespace);
 		setIndex(index);
 
-		String hashKey = "tdf." + namespace + ".task." + index;
+		String hashKey = HashKey(namespace,index);
 
 		// set worker information for task
 		jedis.hset(hashKey, "worker", getWorker());
@@ -226,6 +226,11 @@ public class Task {
 		}
 
 		return index;
+	}
+
+	
+	private String HashKey(String namespace, Long index) {
+			return "tdf." + namespace + ".task." + index;
 	}
 
 	public String getWorker() {
