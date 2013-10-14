@@ -8,7 +8,11 @@ public class Database {
 
 	public Database(String host) {
 		jedis=new Jedis(host);
-		// TODO Auto-generated constructor stub
+		
+	}
+	public Database(String host, int port) {
+		jedis=new Jedis(host,port);
+		
 	}
 
 
