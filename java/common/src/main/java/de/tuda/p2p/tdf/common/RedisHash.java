@@ -11,6 +11,8 @@ public class RedisHash extends HashMap<TaskSetting, Object> {
 	 * 
 	 */
 	private static final long serialVersionUID = 9125414486637756342L;
+	private Jedis jedis;
+	private String RedisKey;
 
 	public RedisHash() {
 		// TODO Auto-generated constructor stub
@@ -31,13 +33,22 @@ public class RedisHash extends HashMap<TaskSetting, Object> {
 		// TODO Auto-generated constructor stub
 	}
 	
+	public RedisHash(Jedis jedis,String RedisKey){
+		this.jedis=jedis;
+		this.RedisKey=RedisKey;
+	}
+	
 	public boolean save(Jedis jedis,String RedisKey){
 		
 		for (TaskSetting k : this.keySet()){
-			jedis.hset(RedisKey,k.toString(),this.get(k).toString());
+			if(get(k) != null) jedis.hset(RedisKey,k.toString(),this.get(k).toString());
 		}
 		
 		
 		return true;
+	}
+	
+	public boolean save(){
+		return this.save(jedis, RedisKey);
 	}
 }
