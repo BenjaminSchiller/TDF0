@@ -6,6 +6,11 @@ import redis.clients.jedis.Jedis;
 
 public class RedisTaskSet extends HashSet<Task> {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public boolean save(Jedis jedis, String RedisKey) {
 
 		for (Task v : this) {
