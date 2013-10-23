@@ -14,12 +14,7 @@ import redis.clients.jedis.Jedis;
 public class Namespace {
 	private Jedis jedis;
 	private RedisHash defaults = new RedisHash();
-	private String client;
-	private DateTime started;
-	private DateTime finished;
-	private DateTime runBefore;
-	private DateTime runAfter;
-	private Long index;
+
 	private String name;
 
 	public Namespace(Jedis jedis, String name) {
@@ -101,64 +96,21 @@ public class Namespace {
 	public void setInput(String input) {
 		defaults.put(TaskSetting.Input, input);
 	}
-
-	public String getClient() {
-		return client;
-	}
-
-	void setClient(String client) {
-
-		this.client = client;
-	}
-
-	public String getStartedAsString() {
-		return getStarted().toString();
-	}
-
-	public DateTime getStarted() {
-		return started;
-	}
-
-	void setStarted(DateTime started) {
-		this.started = started;
-
-	}
-
-	void setStarted(String started) {
-		this.started = DateTime.parse(started);
-	}
-
-	public String getFinishedAsString() {
-		return getFinished().toString();
-	}
-
-	public DateTime getFinished() {
-		return finished;
-	}
-
-	void setFinished(DateTime finished) {
-		this.finished = finished;
-	}
-
-	void setFinished(String finished) {
-		this.finished = DateTime.parse(finished);
-	}
-
 	public String getRunBeforeAsString() {
 		return getRunBefore().toString();
 	}
 
 	public DateTime getRunBefore() {
-		return runBefore;
+		return DateTime.parse(defaults.get(TaskSetting.RunBefore).toString());
 	}
 
 	public void setRunBefore(String runBefore) {
-		this.runBefore = DateTime.parse(runBefore);
+		defaults.put(TaskSetting.RunBefore, runBefore);
 
 	}
 
 	public void setRunBefore(DateTime runBefore) {
-		this.runBefore = runBefore;
+		setRunBefore(runBefore.toString());
 	}
 
 	public String getRunAfterAsString() {
@@ -166,18 +118,18 @@ public class Namespace {
 	}
 
 	public DateTime getRunAfter() {
-		return runAfter;
+		return DateTime.parse(defaults.get(TaskSetting.RunAfter).toString());
+
 	}
 
 	public void setRunAfter(String runAfter) {
-		this.runAfter = DateTime.parse(runAfter);
+		defaults.put(TaskSetting.RunAfter, runAfter);
 
 	}
 
 	public void setRunAfter(DateTime runAfter) {
-		this.runAfter = runAfter;
+		setRunAfter(runAfter.toString());
 	}
-
 	public Integer getTimeout() {
 		return Integer.valueOf(defaults.get(TaskSetting.Timeout).toString());
 	}
@@ -230,14 +182,6 @@ public class Namespace {
 		defaults.put(TaskSetting.WaitAfterRunError, waitAfterRunError);
 	}
 
-	public Long getIndex() {
-		return index;
-	}
-
-	public void setIndex(Long index) {
-		this.index = index;
-	}
-
 	public String getSession() {
 		return defaults.get(TaskSetting.Session).toString();
 	}
@@ -250,41 +194,6 @@ public class Namespace {
 		if (getRunBefore() == null)
 			return false;
 		return getRunBefore().isBeforeNow();
-	}
-
-	public boolean isValid() {
-		if (runAfter == null)
-			return true;
-		return runAfter.isBeforeNow();
-	}
-
-	public Long validWaitTime() {
-		Long waitTime = runAfter.getMillis() - DateTime.now().getMillis();
-		return (waitTime > 0) ? waitTime : 0;
-	}
-
-	public boolean isTimedOut() {
-		if (started == null || getTimeout() == null)
-			return false;
-
-		if (runAfter == null)
-			return started.plusMillis(getTimeout()).isBeforeNow();
-
-		return runAfter.plusMillis(getTimeout()).isBeforeNow();
-
-	}
-
-	public boolean isStarted() {
-		return (started != null);
-	}
-
-	public boolean isFinished() {
-		return (getFinished()!=null);
-	}
-
-	public void start(String client) {
-		setClient(client);
-		setStarted(DateTime.now());
 	}
 
 	public String getName() {

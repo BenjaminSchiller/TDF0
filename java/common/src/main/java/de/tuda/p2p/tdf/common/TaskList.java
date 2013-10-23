@@ -22,8 +22,6 @@ public class TaskList {
 	private String client;
 	private DateTime started;
 	private DateTime finished;
-	private DateTime runBefore;
-	private DateTime runAfter;
 	private Long index;
 
 	/**
@@ -200,16 +198,16 @@ public class TaskList {
 	}
 
 	public DateTime getRunBefore() {
-		return runBefore;
+		return DateTime.parse(defaults.get(TaskSetting.RunBefore).toString());
 	}
 
 	public void setRunBefore(String runBefore) {
-		this.runBefore = DateTime.parse(runBefore);
+		defaults.put(TaskSetting.RunBefore, runBefore);
 
 	}
 
 	public void setRunBefore(DateTime runBefore) {
-		this.runBefore = runBefore;
+		setRunBefore(runBefore.toString());
 	}
 
 	public String getRunAfterAsString() {
@@ -217,16 +215,17 @@ public class TaskList {
 	}
 
 	public DateTime getRunAfter() {
-		return runAfter;
+		return DateTime.parse(defaults.get(TaskSetting.RunAfter).toString());
+
 	}
 
 	public void setRunAfter(String runAfter) {
-		this.runAfter = DateTime.parse(runAfter);
+		defaults.put(TaskSetting.RunAfter, runAfter);
 
 	}
 
 	public void setRunAfter(DateTime runAfter) {
-		this.runAfter = runAfter;
+		setRunAfter(runAfter.toString());
 	}
 
 	public Integer getTimeout() {
@@ -312,13 +311,13 @@ public class TaskList {
 	}
 
 	public boolean isValid() {
-		if (runAfter == null)
+		if (getRunAfter() == null)
 			return true;
-		return runAfter.isBeforeNow();
+		return getRunAfter().isBeforeNow();
 	}
 
 	public Long validWaitTime() {
-		Long waitTime = runAfter.getMillis() - DateTime.now().getMillis();
+		Long waitTime = getRunAfter().getMillis() - DateTime.now().getMillis();
 		return (waitTime > 0) ? waitTime : 0;
 	}
 
@@ -326,10 +325,10 @@ public class TaskList {
 		if (started == null || getTimeout() == null)
 			return false;
 
-		if (runAfter == null)
+		if (getRunAfter() == null)
 			return started.plusMillis(getTimeout()).isBeforeNow();
 
-		return runAfter.plusMillis(getTimeout()).isBeforeNow();
+		return getRunAfter().plusMillis(getTimeout()).isBeforeNow();
 
 	}
 
