@@ -17,22 +17,6 @@ public class RedisHash extends HashMap<TaskSetting, Object> {
 	public RedisHash() {
 		// TODO Auto-generated constructor stub
 	}
-
-	public RedisHash(int initialCapacity) {
-		super(initialCapacity);
-		// TODO Auto-generated constructor stub
-	}
-
-	public RedisHash(Map<? extends TaskSetting, ? extends Object> m) {
-		super(m);
-		// TODO Auto-generated constructor stub
-	}
-
-	public RedisHash(int initialCapacity, float loadFactor) {
-		super(initialCapacity, loadFactor);
-		// TODO Auto-generated constructor stub
-	}
-	
 	public RedisHash(Jedis jedis,String RedisKey){
 		this.jedis=jedis;
 		this.RedisKey=RedisKey;
