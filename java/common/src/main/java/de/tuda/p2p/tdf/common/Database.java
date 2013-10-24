@@ -20,9 +20,5 @@ public class Database {
 	public void setJedis(Jedis jedis) {
 		this.jedis = jedis;
 	}
-	
-	
-
-
 
 }
