@@ -14,6 +14,14 @@ public class Database {
 		jedis=new Jedis(host,port);
 		
 	}
+	public Jedis getJedis() {
+		return jedis;
+	}
+	public void setJedis(Jedis jedis) {
+		this.jedis = jedis;
+	}
+	
+	
 
 
 

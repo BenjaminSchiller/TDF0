@@ -1,7 +1,6 @@
 package de.tuda.p2p.tdf.common;
 
 import java.util.HashMap;
-import java.util.Map;
 
 import redis.clients.jedis.Jedis;
 
