@@ -1,5 +1,6 @@
 package de.tuda.p2p.tdf.common;
 
+import java.util.Collection;
 import java.util.HashSet;
 
 import redis.clients.jedis.Jedis;
@@ -10,6 +11,14 @@ public class RedisTaskSet extends HashSet<Task> {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+
+	public RedisTaskSet(Collection<Task> tasks) {
+		for (Task task : tasks) add(task);
+	}
+
+	public RedisTaskSet() {
+		// TODO Auto-generated constructor stub
+	}
 
 	public boolean save(Jedis jedis, String RedisKey) {
 
@@ -26,6 +35,10 @@ public class RedisTaskSet extends HashSet<Task> {
 			add(new Task(jedis, namespace, Long.valueOf(index)));
 		}
 		return true;
+	}
+
+	public Task getany() {
+		return this.iterator().next();
 	}
 
 }

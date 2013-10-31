@@ -34,4 +34,13 @@ public class RedisHash extends HashMap<TaskSetting, Object> {
 	public boolean save(){
 		return this.save(jedis, RedisKey);
 	}
+	
+	public boolean load(Jedis jedis,String RedisKey){
+		
+		for (TaskSetting key : TaskSetting.values()){
+			String value= jedis.hget(RedisKey,key.toString());
+			if(value != null) this.put(key, value);
+		}
+		return true;
+	}
 }

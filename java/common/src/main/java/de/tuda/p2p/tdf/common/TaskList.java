@@ -3,6 +3,7 @@
  */
 package de.tuda.p2p.tdf.common;
 
+import java.util.Collection;
 import java.util.Set;
 
 import org.joda.time.DateTime;
@@ -100,6 +101,23 @@ public class TaskList {
 		}
 
 		return counter;
+	}
+	
+	public TaskList load(Jedis jedis, String namespace, Long index) {
+		
+		if(
+			jedis==null||
+			namespace==null||
+			namespace==""||
+			index==null){
+			return null;
+		}
+		
+		tasks.load(jedis,namespace,SetKey(namespace, index));
+		defaults.load(jedis, HashKey(namespace, index));
+		// load defaults
+		return this;
+
 	}
 
 	public Long save(Jedis jedis, String namespace, Long index) {
@@ -344,4 +362,18 @@ public class TaskList {
 		setClient(client);
 		setStarted(DateTime.now());
 	}
+
+	public RedisTaskSet getTasks() {
+		// TODO Auto-generated method stub
+		return tasks;
+	}
+	
+	public RedisTaskSet getOpenTasks() {
+		RedisTaskSet tasks = new RedisTaskSet(getTasks());
+		for (Task task : tasks){
+			if (task.isFinished()) tasks.remove(task);
+		}
+		return tasks;
+	}
+	
 }
