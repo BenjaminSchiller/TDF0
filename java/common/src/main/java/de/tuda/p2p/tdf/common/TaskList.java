@@ -3,7 +3,6 @@
  */
 package de.tuda.p2p.tdf.common;
 
-import java.util.Collection;
 import java.util.Set;
 
 import org.joda.time.DateTime;

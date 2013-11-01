@@ -153,6 +153,7 @@ public class TaskInterfaceClient {
 	 *             Thrown if the thread is interrupted while waiting for the
 	 *             task to be valid
 	 */
+	@SuppressWarnings("unused")
 	private ClientTask getTaskToExecute(String namespace, Integer waitQueueExpired) throws InterruptedException {
 		String index;
 		ClientTask task;
