@@ -13,7 +13,7 @@ import redis.clients.jedis.Jedis;
  * @author georg
  * 
  */
-public class TaskList {
+public class TaskList implements TaskLike {
 
 	private RedisTaskSet tasks = new RedisTaskSet();
 	private String namespace;
@@ -33,7 +33,11 @@ public class TaskList {
 		this.setNamespace(namespace);
 		this.setJedis(jedis);
 
-		// TODO Auto-generated constructor stub
+	}
+	public TaskList(Jedis jedis, String namespace,Long index) {
+		this(jedis,namespace);
+		setIndex(index);
+		load(jedis,namespace,index);
 	}
 
 	private void setJedis(Jedis jedis) {
@@ -46,7 +50,6 @@ public class TaskList {
 	 * 
 	 */
 	public TaskList() {
-		// TODO Auto-generated constructor stub
 	}
 
 	/**
@@ -374,5 +377,36 @@ public class TaskList {
 		}
 		return tasks;
 	}
+	
+	public void applyDefaults(){
+		for (Task t : getTasks()) t.applyDefaults(defaults);
+	}
+	
+	public void applyDefaults(RedisHash rh){
+		// set task information
+				if (getInput().isEmpty()) {
+					setInput(rh.get(TaskSetting.Input).toString());
+				}
+				if (getRunBeforeAsString().isEmpty()) {
+					setRunBefore(rh.get(TaskSetting.RunBefore).toString());
+				}
+				if (getRunAfterAsString().isEmpty()) {
+					setRunAfter(rh.get(TaskSetting.RunAfter).toString());
+				}
+				if (getTimeout() == null) {
+					setTimeout(rh.get(TaskSetting.Timeout).toString());
+				}
+				if (getWaitAfterSetupError() == null) {
+					setWaitAfterSetupError(rh.get(TaskSetting.WaitAfterSetupError).toString());
+				}
+				if (getWaitAfterRunError() == null) {
+					setWaitAfterRunError(rh.get(TaskSetting.WaitAfterRunError).toString());
+				}
+				if (getWaitAfterSuccess() == null) {
+					setWaitAfterSuccess(rh.get(TaskSetting.WaitAfterSuccess).toString());
+				}
+
+	}
+
 	
 }

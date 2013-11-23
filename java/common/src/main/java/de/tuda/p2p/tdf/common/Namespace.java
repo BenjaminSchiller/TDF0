@@ -3,6 +3,9 @@
  */
 package de.tuda.p2p.tdf.common;
 
+import java.util.Collection;
+import java.util.HashSet;
+
 import org.joda.time.DateTime;
 
 import redis.clients.jedis.Jedis;
@@ -11,7 +14,7 @@ import redis.clients.jedis.Jedis;
  * @author georg
  *
  */
-public class Namespace {
+public class Namespace implements TaskLike {
 	private Jedis jedis;
 	private RedisHash defaults = new RedisHash();
 
@@ -48,7 +51,9 @@ public class Namespace {
 	 * @param session
 	 */
 
-	
+	private String Setkey(){
+		return "tdf."+ getName();
+	}
 	private String HashKey() {
 		return "tdf."+ getName() + ".defaults";
 	}
@@ -202,5 +207,25 @@ public class Namespace {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public void applyDefaults(){
+		for (TaskList t : getLists()) t.applyDefaults(defaults);
+	}
+
+	private Collection<TaskList> getLists() {
+		Collection<TaskList> lists = new HashSet<TaskList>();
+		for(String id : getJedis().smembers(Setkey())){
+			lists.add(new TaskList(jedis,name,Long.parseLong(id)));
+		}
+		return lists;
+	}
+
+	protected Jedis getJedis() {
+		return jedis;
+	}
+
+	public long getNewIndex() {
+		return jedis.incr("tdf." + name + ".index");
 	}
 }

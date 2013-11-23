@@ -1,89 +1,56 @@
 package de.tuda.p2p.tdf.common;
 
+import java.util.Map.Entry;
+
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import redis.clients.jedis.Jedis;
 
-public class Task {
+public class Task implements TaskLike {
 
-	// the location of the worker (including version), that can execute this
-	// task (http-URI, https-URI or file-URI)
-	private String worker = "";
-
-	// the input string, that will be handed to the worker
-	private String input = "";
-
-	// the output-string, returned from the worker
-	private String output = "";
-
-	// the logged STDOUT from the worker
-	private String log = "";
-
-	// the logged STDERR from the worker
-	private String error = "";
-
-	// the client-id that executes/executed the task
-	private String client = "";
-
-	// the timestamp when this task was started
-	private DateTime started;
-
-	// the timestamp when this task was finished
-	private DateTime finished;
-
-	// the timestamp when this task expires
-	private DateTime runBefore;
-
-	// the timestamp after this task is valid
-	private DateTime runAfter;
-
-	// the time in milliseconds after this task should be requeued (from the server) and cancelled (from the client).
-	private Integer timeout;
-
-	// the time in milliseconds to wait before executing the next task after
-	// success
-	private Integer waitAfterSuccess;
-
-	// the time in milliseconds to wait before executing the next task after
-	// failure during task execution
-	private Integer waitAfterRunError;
-
-	// the time in milliseconds to wait before executing the next task after
-	// failure during task setup
-	private Integer waitAfterSetupError;
-
-	// the task index in the database
-	private Long index;
-
-	// the namespace of the task
-	private String namespace;
-
-	// the session of the task
-	private String session;
+	private RedisHash settings = new RedisHash();
 
 	DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
 
-	/**
-	 * @return a text representation of all the task's information except input,
-	 *         output, log and error
+	private String output;
+
+	private String log;
+
+	private String error;
+
+	private String client;
+
+	private DateTime started;
+
+	private DateTime finished;
+
+	private Long index;
+
+	private String namespace;
+
+	private String session;
+
+	/* (non-Javadoc)
+	 * @see de.tuda.p2p.tdf.common.TaskLike#asString()
 	 */
+	@Override
 	public String asString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("worker: ").append(worker).append("\n");
-		sb.append("client: ").append(client).append("\n");
-		sb.append("started: ").append(started).append("\n");
-		sb.append("finished: ").append(finished).append("\n");
-		sb.append("runAfter: ").append(runAfter).append("\n");
-		sb.append("runBefore: ").append(runBefore).append("\n");
-		sb.append("timeout: ").append(timeout).append("\n");
-		sb.append("waitAfterSuccess: ").append(waitAfterSuccess).append("\n");
-		sb.append("waitAfterSetupError: ").append(waitAfterSetupError).append("\n");
-		sb.append("waitAfterRunError: ").append(waitAfterRunError).append("\n");
-		sb.append("index: ").append(index).append("\n");
-		sb.append("namespace: ").append(namespace).append("\n");
-		sb.append("session: ").append(session).append("\n");
+		sb.append("worker: ").append(getWorker()).append("\n");
+		sb.append("client: ").append(getClient()).append("\n");
+		sb.append("started: ").append(getStarted()).append("\n");
+		sb.append("finished: ").append(getFinished()).append("\n");
+		sb.append("runAfter: ").append(getRunAfter()).append("\n");
+		sb.append("runBefore: ").append(getRunBefore()).append("\n");
+		sb.append("timeout: ").append(getTimeout()).append("\n");
+		sb.append("waitAfterSuccess: ").append(getWaitAfterSuccess()).append("\n");
+		sb.append("waitAfterSetupError: ").append(getWaitAfterSetupError()).append("\n");
+		sb.append("waitAfterRunError: ").append(getWaitAfterRunError()).append("\n");
+		sb.append("index: ").append(getIndex()).append("\n");
+		sb.append("namespace: ").append(getNamespace()).append("\n");
+		sb.append("session: ").append(getSession()).append("\n");
 		return sb.toString();
 	}
 
@@ -140,6 +107,36 @@ public class Task {
 		setSession(session);
 	}
 
+	public Task(RedisHash rh) {
+		
+		for(Entry<TaskSetting, Object> e :rh.entrySet()){
+			switch(e.getKey()){
+			case Input: setInput(e.getValue().toString());
+				break;
+			case RunAfter: setRunAfter(e.getValue().toString());
+				break;
+			case RunBefore: setRunBefore(e.getValue().toString());
+				break;
+			case Session: setSession(e.getValue().toString());
+				break;
+			case Timeout: setTimeout(e.getValue().toString());
+				break;
+			case WaitAfterRunError: setWaitAfterRunError(e.getValue().toString());
+				break;
+			case WaitAfterSetupError: setWaitAfterSetupError(e.getValue().toString());
+				break;
+			case WaitAfterSuccess: setWaitAfterSuccess(e.getValue().toString());
+				break;
+			case Worker: setWorker(e.getValue().toString());
+				break;
+			default:
+				break;
+			
+			}
+		}
+		
+	}
+
 	/**
 	 * Saves the task using the task's namespace and index field. If a task with
 	 * this index exists, it will be updated/overwritten.
@@ -169,7 +166,7 @@ public class Task {
 	 */
 	public Long save(Jedis jedis, String namespace) {
 		if (getIndex() == null) {
-			return -1L;
+			setIndex((new Namespace(jedis, namespace)).getNewIndex());
 		}
 		return this.save(jedis, namespace, getIndex());
 	}
@@ -233,27 +230,43 @@ public class Task {
 			return "tdf." + namespace + ".task." + index;
 	}
 
+	/* (non-Javadoc)
+	 * @see de.tuda.p2p.tdf.common.TaskLike#getWorker()
+	 */
+	@Override
 	public String getWorker() {
-		return worker;
+		return settings.get(TaskSetting.Worker).toString();
 	}
 
+	/* (non-Javadoc)
+	 * @see de.tuda.p2p.tdf.common.TaskLike#setWorker(java.lang.String)
+	 */
+	@Override
 	public void setWorker(String worker) {
 		if (worker != null) {
-			this.worker = worker;
+			settings.put(TaskSetting.Worker, worker);
 		} else {
-			this.worker = "";
+			setWorker("");
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see de.tuda.p2p.tdf.common.TaskLike#getInput()
+	 */
+	@Override
 	public String getInput() {
-		return input;
+		return settings.get(TaskSetting.Input).toString();
 	}
 
+	/* (non-Javadoc)
+	 * @see de.tuda.p2p.tdf.common.TaskLike#setInput(java.lang.String)
+	 */
+	@Override
 	public void setInput(String input) {
 		if (input != null) {
-			this.input = input;
+			settings.put(TaskSetting.Input,input);
 		} else {
-			this.input = "";
+			setInput("");
 		}
 	}
 
@@ -318,10 +331,10 @@ public class Task {
 	}
 
 	public String getStartedAsString() {
-		if (started == null) {
+		if (getStarted() == null) {
 			return "";
 		}
-		return started.toString(formatter);
+		return getStarted().toString(formatter);
 	}
 
 	public DateTime getStarted() {
@@ -345,10 +358,10 @@ public class Task {
 	}
 
 	public String getFinishedAsString() {
-		if (finished == null) {
+		if (getFinished() == null) {
 			return "";
 		}
-		return finished.toString(formatter);
+		return getFinished().toString(formatter);
 	}
 
 	public DateTime getFinished() {
@@ -372,103 +385,161 @@ public class Task {
 	}
 
 	public String getRunBeforeAsString() {
-		if (runBefore == null) {
+		if (getRunBefore() == null) {
 			return "";
 		}
-		return runBefore.toString(formatter);
+		return getRunBefore().toString(formatter);
 	}
 
+	/* (non-Javadoc)
+	 * @see de.tuda.p2p.tdf.common.TaskLike#getRunBefore()
+	 */
+	@Override
 	public DateTime getRunBefore() {
-		return runBefore;
+		if (settings.get(TaskSetting.RunBefore) == null)  return null;
+		return DateTime.parse(settings.get(TaskSetting.RunBefore).toString());
 	}
 
 	public void setRunBefore(String runBefore) {
 		if (runBefore != null && !runBefore.isEmpty()) {
-			this.runBefore = formatter.parseDateTime(runBefore);
+			settings.put(TaskSetting.RunBefore,runBefore);
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see de.tuda.p2p.tdf.common.TaskLike#setRunBefore(org.joda.time.DateTime)
+	 */
+	@Override
 	public void setRunBefore(DateTime runBefore) {
-		this.runBefore = runBefore;
+		setRunBefore(runBefore.toString(formatter));
 	}
 
 	public String getRunAfterAsString() {
-		if (runAfter == null) {
+		if (getRunAfter() == null) {
 			return "";
 		}
-		return runAfter.toString(formatter);
+		return getRunAfter().toString(formatter);
 	}
 
+	/* (non-Javadoc)
+	 * @see de.tuda.p2p.tdf.common.TaskLike#getRunAfter()
+	 */
+	@Override
 	public DateTime getRunAfter() {
-		return runAfter;
+		if (settings.get(TaskSetting.RunAfter) == null) return null; 
+		return DateTime.parse(settings.get(TaskSetting.RunAfter).toString());
+
 	}
 
 	public void setRunAfter(String runAfter) {
 		if (runAfter != null && !runAfter.isEmpty()) {
-			this.runAfter = formatter.parseDateTime(runAfter);
+			settings.put(TaskSetting.RunAfter, runAfter);
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see de.tuda.p2p.tdf.common.TaskLike#setRunAfter(org.joda.time.DateTime)
+	 */
+	@Override
 	public void setRunAfter(DateTime runAfter) {
-		this.runAfter = runAfter;
+		setRunAfter(runAfter.toString(formatter));
 	}
 
+	/* (non-Javadoc)
+	 * @see de.tuda.p2p.tdf.common.TaskLike#getTimeout()
+	 */
+	@Override
 	public Integer getTimeout() {
-		return timeout;
+		if (settings.get(TaskSetting.Timeout) == null) return null;
+		return Integer.parseInt(settings.get(TaskSetting.Timeout).toString());
 	}
 
+	/* (non-Javadoc)
+	 * @see de.tuda.p2p.tdf.common.TaskLike#setTimeout(java.lang.Integer)
+	 */
+	@Override
 	public void setTimeout(Integer timeout) {
-		this.timeout = timeout;
+		setTimeout(timeout.toString());
 	}
 
 	public void setTimeout(String timeout) {
 		if (timeout != null && !timeout.isEmpty()) {
-			this.timeout = Integer.valueOf(timeout);
+			settings.put(TaskSetting.Timeout, timeout);
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see de.tuda.p2p.tdf.common.TaskLike#getWaitAfterSuccess()
+	 */
+	@Override
 	public Integer getWaitAfterSuccess() {
-		return waitAfterSuccess;
+		if (settings.get(TaskSetting.WaitAfterSuccess) == null) return null;
+		return Integer.valueOf(settings.get(TaskSetting.WaitAfterSuccess).toString());
+
 	}
 
+	/* (non-Javadoc)
+	 * @see de.tuda.p2p.tdf.common.TaskLike#setWaitAfterSuccess(java.lang.Integer)
+	 */
+	@Override
 	public void setWaitAfterSuccess(Integer waitAfterSuccess) {
-		this.waitAfterSuccess = waitAfterSuccess;
+		settings.put(TaskSetting.WaitAfterSuccess, waitAfterSuccess);
 	}
 
 	public void setWaitAfterSuccess(String waitAfterSuccess) {
 		if (waitAfterSuccess != null && !waitAfterSuccess.isEmpty()) {
-			this.waitAfterSuccess = Integer.valueOf(waitAfterSuccess);
+			settings.put(TaskSetting.WaitAfterSuccess, waitAfterSuccess);
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see de.tuda.p2p.tdf.common.TaskLike#getWaitAfterSetupError()
+	 */
+	@Override
 	public Integer getWaitAfterSetupError() {
-		return waitAfterSetupError;
+		if (settings.get(TaskSetting.WaitAfterSetupError) == null) return null;
+		return Integer.valueOf(settings.get(TaskSetting.WaitAfterSetupError).toString());
 	}
 
+	/* (non-Javadoc)
+	 * @see de.tuda.p2p.tdf.common.TaskLike#setWaitAfterSetupError(java.lang.Integer)
+	 */
+	@Override
 	public void setWaitAfterSetupError(Integer waitAfterSetupError) {
-		this.waitAfterSetupError = waitAfterSetupError;
+		settings.put(TaskSetting.WaitAfterSetupError, waitAfterSetupError);
 	}
 
 	public void setWaitAfterSetupError(String waitAfterSetupError) {
 		if (waitAfterSetupError != null && !waitAfterSetupError.isEmpty()) {
-			this.waitAfterSetupError = Integer.valueOf(waitAfterSetupError);
+			settings.put(TaskSetting.WaitAfterSetupError, waitAfterSetupError);
+			
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see de.tuda.p2p.tdf.common.TaskLike#getWaitAfterRunError()
+	 */
+	@Override
 	public Integer getWaitAfterRunError() {
-		return waitAfterRunError;
+		if (settings.get(TaskSetting.WaitAfterRunError) == null) return null;
+		return Integer.valueOf(settings.get(TaskSetting.WaitAfterRunError).toString());
 	}
 
+	/* (non-Javadoc)
+	 * @see de.tuda.p2p.tdf.common.TaskLike#setWaitAfterRunError(java.lang.Integer)
+	 */
+	@Override
 	public void setWaitAfterRunError(Integer waitAfterRunError) {
-		this.waitAfterRunError = waitAfterRunError;
+		settings.put(TaskSetting.WaitAfterRunError, waitAfterRunError);
 	}
 
 	public void setWaitAfterRunError(String waitAfterRunError) {
 		if (waitAfterRunError != null && !waitAfterRunError.isEmpty()) {
-			this.waitAfterRunError = Integer.valueOf(waitAfterRunError);
+			settings.put(TaskSetting.WaitAfterRunError, waitAfterRunError);
 		}
 	}
 
+	
 	public Long getIndex() {
 		return index;
 	}
@@ -502,10 +573,10 @@ public class Task {
 	 * @return true if this task is expired, false if it is still valid
 	 */
 	public boolean isExpired() {
-		if (runBefore == null) {
+		if (getRunBefore() == null) {
 			return false;
 		}
-		return runBefore.isBeforeNow();
+		return getRunBefore().isBeforeNow();
 	}
 
 	/**
@@ -514,10 +585,10 @@ public class Task {
 	 * @return true if this task can be executed, false if it is not valid yet
 	 */
 	public boolean isValid() {
-		if (runAfter == null) {
+		if (getRunAfter() == null) {
 			return true;
 		}
-		return runAfter.isBeforeNow();
+		return getRunAfter().isBeforeNow();
 	}
 
 	/**
@@ -526,7 +597,7 @@ public class Task {
 	 * @return The time to wait in milliseconds
 	 */
 	public Long validWaitTime() {
-		Long waitTime = runAfter.getMillis() - DateTime.now().getMillis();
+		Long waitTime = getRunAfter().getMillis() - DateTime.now().getMillis();
 		return (waitTime > 0) ? waitTime : 0;
 	}
 
@@ -536,13 +607,13 @@ public class Task {
 	 * @return true if the task should be requeued, false if not
 	 */
 	public boolean isTimedOut() {
-		if (started == null || timeout == null) {
+		if (getStarted() == null || getTimeout() == null) {
 			return false;
 		}
-		if (runAfter == null) {
-			return started.plusMillis(timeout).isBeforeNow();
+		if (getRunAfter() == null) {
+			return getStarted().plusMillis(getTimeout()).isBeforeNow();
 		}
-		return runAfter.plusMillis(timeout).isBeforeNow();
+		return getRunAfter().plusMillis(getTimeout()).isBeforeNow();
 	}
 
 	/**
@@ -551,7 +622,7 @@ public class Task {
 	 * @return true if started, false if not
 	 */
 	public boolean isStarted() {
-		return (started != null);
+		return (getStarted() != null);
 	}
 
 	/**
@@ -560,7 +631,7 @@ public class Task {
 	 * @return true if finished, false if not
 	 */
 	public boolean isFinished() {
-		return (finished != null);
+		return (getFinished() != null);
 	}
 
 	/**
@@ -571,8 +642,34 @@ public class Task {
 	 *            The client that executes the task
 	 */
 	public void start(String client) {
-		this.started = DateTime.now();
+		this.setStarted(DateTime.now());
 		setClient(client);
+	}
+	
+	public void applyDefaults(RedisHash rh){
+		// set task information
+				if (getInput().isEmpty()) {
+					setInput(rh.get(TaskSetting.Input).toString());
+				}
+				if (getRunBeforeAsString().isEmpty()) {
+					setRunBefore(rh.get(TaskSetting.RunBefore).toString());
+				}
+				if (getRunAfterAsString().isEmpty()) {
+					setRunAfter(rh.get(TaskSetting.RunAfter).toString());
+				}
+				if (getTimeout() == null) {
+					setTimeout(rh.get(TaskSetting.Timeout).toString());
+				}
+				if (getWaitAfterSetupError() == null) {
+					setWaitAfterSetupError(rh.get(TaskSetting.WaitAfterSetupError).toString());
+				}
+				if (getWaitAfterRunError() == null) {
+					setWaitAfterRunError(rh.get(TaskSetting.WaitAfterRunError).toString());
+				}
+				if (getWaitAfterSuccess() == null) {
+					setWaitAfterSuccess(rh.get(TaskSetting.WaitAfterSuccess).toString());
+				}
+
 	}
 
 }

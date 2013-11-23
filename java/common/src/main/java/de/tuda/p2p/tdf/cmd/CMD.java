@@ -8,8 +8,32 @@ import java.io.InputStreamReader;
 
 import org.apache.commons.io.IOUtils;
 
+import redis.clients.jedis.Jedis;
+import argo.jdom.JdomParser;
+import argo.jdom.JsonNode;
+import argo.saj.InvalidSyntaxException;
+
 
 public abstract class CMD {
+
+	protected static Jedis jedis;
+	
+	public static void init(){
+		
+		//jedis=new Jedis(hostname);
+	}
+	
+	protected static JsonNode parsejson(String s){
+		JdomParser json=new JdomParser();
+		JsonNode jn;
+		try {
+			jn=json.parse(s.replaceAll(System.lineSeparator(),"").replaceAll("\t",""));
+		} catch (InvalidSyntaxException e) {
+			System.err.println(e.getMessage());
+			return null;	
+		}
+		return jn;
+	}
 
 	
 	protected static String getInput(String[] args){
