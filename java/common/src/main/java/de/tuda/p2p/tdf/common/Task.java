@@ -12,7 +12,8 @@ public class Task implements TaskLike {
 
 	private RedisHash settings = new RedisHash();
 
-	DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+	DateTimeFormatter formatter = DateTimeFormat
+			.forPattern("yyyy-MM-dd HH:mm:ss");
 
 	private String output;
 
@@ -32,7 +33,9 @@ public class Task implements TaskLike {
 
 	private String session;
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see de.tuda.p2p.tdf.common.TaskLike#asString()
 	 */
 	@Override
@@ -45,18 +48,56 @@ public class Task implements TaskLike {
 		sb.append("runAfter: ").append(getRunAfter()).append("\n");
 		sb.append("runBefore: ").append(getRunBefore()).append("\n");
 		sb.append("timeout: ").append(getTimeout()).append("\n");
-		sb.append("waitAfterSuccess: ").append(getWaitAfterSuccess()).append("\n");
-		sb.append("waitAfterSetupError: ").append(getWaitAfterSetupError()).append("\n");
-		sb.append("waitAfterRunError: ").append(getWaitAfterRunError()).append("\n");
+		sb.append("waitAfterSuccess: ").append(getWaitAfterSuccess())
+				.append("\n");
+		sb.append("waitAfterSetupError: ").append(getWaitAfterSetupError())
+				.append("\n");
+		sb.append("waitAfterRunError: ").append(getWaitAfterRunError())
+				.append("\n");
 		sb.append("index: ").append(getIndex()).append("\n");
 		sb.append("namespace: ").append(getNamespace()).append("\n");
 		sb.append("session: ").append(getSession()).append("\n");
 		return sb.toString();
 	}
+	
+	public String asJsonString(){
+		StringBuilder sb = new StringBuilder("{\n");
+		if (getWorker() != null)
+			sb.append("\"worker\": \"").append(getWorker()).append("\",\n");
+		if (getClient() != null)
+			sb.append("\"client: \"").append(getClient()).append("\",\n");
+		if (getStarted() != null)
+			sb.append("\"started: \"").append(getStarted()).append("\",\n");
+		if (getFinished() != null)
+			sb.append("\"finished: \"").append(getFinished()).append("\",\n");
+		if (getRunAfter() != null)
+			sb.append("\"runAfter: \"").append(getRunAfter()).append("\",\n");
+		if (getRunBefore() != null)
+			sb.append("\"runBefore: \"").append(getRunBefore()).append("\",\n");
+		if (getTimeout() != null)
+			sb.append("\"timeout: \"").append(getTimeout()).append("\",\n");
+		if (getWaitAfterSuccess() != null)
+			sb.append("\"waitAfterSuccess: \"").append(getWaitAfterSuccess())
+					.append("\",\n");
+		if (getWaitAfterSetupError() != null)
+			sb.append("\"waitAfterSetupError: \"")
+					.append(getWaitAfterSetupError()).append("\",\n");
+		if (getWaitAfterRunError() != null)
+			sb.append("\"waitAfterRunError: \"").append(getWaitAfterRunError())
+					.append("\",\n");
+		if (getIndex() != null)
+			sb.append("\"index: \"").append(getIndex()).append("\",\n");
+		if (getNamespace() != null)
+			sb.append("\"namespace: \"").append(getNamespace()).append("\",\n");
+		if (getSession() != null)
+			sb.append("\"session: \"").append(getSession()).append("\"\n");
+		sb.append("}");
+		return sb.toString();
+	}
 
 	/**
 	 * Constructor that fills itself from Redis
-	 *
+	 * 
 	 * @param jedis
 	 *            The Jedis instance
 	 * @param namespace
@@ -65,7 +106,7 @@ public class Task implements TaskLike {
 	 *            The index of the task
 	 */
 	public Task(Jedis jedis, String namespace, Long index) {
-		String hashKey = HashKey(namespace,index);
+		String hashKey = HashKey(namespace, index);
 		setIndex(index);
 		setNamespace(namespace);
 
@@ -92,10 +133,9 @@ public class Task implements TaskLike {
 	/**
 	 * Constructor with all attributes that can be set server-side
 	 */
-	public Task(String worker, String input,
-			DateTime runBefore, DateTime runAfter, String timeout,
-			String waitAfterSetupError, String waitAfterRunError, 
-			String waitAfterSuccess, String session) {
+	public Task(String worker, String input, DateTime runBefore,
+			DateTime runAfter, String timeout, String waitAfterSetupError,
+			String waitAfterRunError, String waitAfterSuccess, String session) {
 		setWorker(worker);
 		setInput(input);
 		setRunBefore(runBefore);
@@ -108,39 +148,48 @@ public class Task implements TaskLike {
 	}
 
 	public Task(RedisHash rh) {
-		
-		for(Entry<TaskSetting, Object> e :rh.entrySet()){
-			switch(e.getKey()){
-			case Input: setInput(e.getValue().toString());
+
+		for (Entry<TaskSetting, Object> e : rh.entrySet()) {
+			switch (e.getKey()) {
+			case Input:
+				setInput(e.getValue().toString());
 				break;
-			case RunAfter: setRunAfter(e.getValue().toString());
+			case RunAfter:
+				setRunAfter(e.getValue().toString());
 				break;
-			case RunBefore: setRunBefore(e.getValue().toString());
+			case RunBefore:
+				setRunBefore(e.getValue().toString());
 				break;
-			case Session: setSession(e.getValue().toString());
+			case Session:
+				setSession(e.getValue().toString());
 				break;
-			case Timeout: setTimeout(e.getValue().toString());
+			case Timeout:
+				setTimeout(e.getValue().toString());
 				break;
-			case WaitAfterRunError: setWaitAfterRunError(e.getValue().toString());
+			case WaitAfterRunError:
+				setWaitAfterRunError(e.getValue().toString());
 				break;
-			case WaitAfterSetupError: setWaitAfterSetupError(e.getValue().toString());
+			case WaitAfterSetupError:
+				setWaitAfterSetupError(e.getValue().toString());
 				break;
-			case WaitAfterSuccess: setWaitAfterSuccess(e.getValue().toString());
+			case WaitAfterSuccess:
+				setWaitAfterSuccess(e.getValue().toString());
 				break;
-			case Worker: setWorker(e.getValue().toString());
+			case Worker:
+				setWorker(e.getValue().toString());
 				break;
 			default:
 				break;
-			
+
 			}
 		}
-		
+
 	}
 
 	/**
 	 * Saves the task using the task's namespace and index field. If a task with
 	 * this index exists, it will be updated/overwritten.
-	 *
+	 * 
 	 * @param jedis
 	 *            The jedis instance
 	 * @return The task's index, if successful, -1 if not (e.g. the task
@@ -156,7 +205,7 @@ public class Task implements TaskLike {
 	/**
 	 * Saves the task using the task's index field. If a task with this index
 	 * exists, it will be updated/overwritten.
-	 *
+	 * 
 	 * @param jedis
 	 *            The Jedis instance
 	 * @param namespace
@@ -174,7 +223,7 @@ public class Task implements TaskLike {
 	/**
 	 * Saves the task. If a task with the given index exists, it will be
 	 * updated/overwritten.
-	 *
+	 * 
 	 * @param jedis
 	 *            The Jedis instance
 	 * @param namespace
@@ -191,7 +240,7 @@ public class Task implements TaskLike {
 		setNamespace(namespace);
 		setIndex(index);
 
-		String hashKey = HashKey(namespace,index);
+		String hashKey = HashKey(namespace, index);
 
 		// set worker information for task
 		jedis.hset(hashKey, "worker", getWorker());
@@ -210,13 +259,16 @@ public class Task implements TaskLike {
 			jedis.hset(hashKey, "timeout", getTimeout().toString());
 		}
 		if (getWaitAfterSetupError() != null) {
-			jedis.hset(hashKey, "waitAfterSetupError", getWaitAfterSetupError().toString());
+			jedis.hset(hashKey, "waitAfterSetupError", getWaitAfterSetupError()
+					.toString());
 		}
 		if (getWaitAfterRunError() != null) {
-			jedis.hset(hashKey, "waitAfterRunError", getWaitAfterRunError().toString());
+			jedis.hset(hashKey, "waitAfterRunError", getWaitAfterRunError()
+					.toString());
 		}
 		if (getWaitAfterSuccess() != null) {
-			jedis.hset(hashKey, "waitAfterSuccess", getWaitAfterSuccess().toString());
+			jedis.hset(hashKey, "waitAfterSuccess", getWaitAfterSuccess()
+					.toString());
 		}
 		if (getSession() != null) {
 			jedis.hset(hashKey, "session", getSession());
@@ -225,20 +277,23 @@ public class Task implements TaskLike {
 		return index;
 	}
 
-	
 	private String HashKey(String namespace, Long index) {
-			return "tdf." + namespace + ".task." + index;
+		return "tdf." + namespace + ".task." + index;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see de.tuda.p2p.tdf.common.TaskLike#getWorker()
 	 */
 	@Override
 	public String getWorker() {
-		return settings.get(TaskSetting.Worker).toString();
+		return getsetting(TaskSetting.Worker);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see de.tuda.p2p.tdf.common.TaskLike#setWorker(java.lang.String)
 	 */
 	@Override
@@ -250,21 +305,30 @@ public class Task implements TaskLike {
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see de.tuda.p2p.tdf.common.TaskLike#getInput()
 	 */
 	@Override
 	public String getInput() {
-		return settings.get(TaskSetting.Input).toString();
+		return getsetting(TaskSetting.Input);
 	}
 
-	/* (non-Javadoc)
+	private String getsetting(TaskSetting input) {
+		// TODO Auto-generated method stub
+		return (settings.containsKey(input) ? settings.get(input).toString() : null);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see de.tuda.p2p.tdf.common.TaskLike#setInput(java.lang.String)
 	 */
 	@Override
 	public void setInput(String input) {
 		if (input != null) {
-			settings.put(TaskSetting.Input,input);
+			settings.put(TaskSetting.Input, input);
 		} else {
 			setInput("");
 		}
@@ -391,22 +455,27 @@ public class Task implements TaskLike {
 		return getRunBefore().toString(formatter);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see de.tuda.p2p.tdf.common.TaskLike#getRunBefore()
 	 */
 	@Override
 	public DateTime getRunBefore() {
-		if (settings.get(TaskSetting.RunBefore) == null)  return null;
-		return DateTime.parse(settings.get(TaskSetting.RunBefore).toString());
+		if (getsetting(TaskSetting.RunBefore) == null)
+			return null;
+		return DateTime.parse(getsetting(TaskSetting.RunBefore));
 	}
 
 	public void setRunBefore(String runBefore) {
 		if (runBefore != null && !runBefore.isEmpty()) {
-			settings.put(TaskSetting.RunBefore,runBefore);
+			settings.put(TaskSetting.RunBefore, runBefore);
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see de.tuda.p2p.tdf.common.TaskLike#setRunBefore(org.joda.time.DateTime)
 	 */
 	@Override
@@ -421,13 +490,16 @@ public class Task implements TaskLike {
 		return getRunAfter().toString(formatter);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see de.tuda.p2p.tdf.common.TaskLike#getRunAfter()
 	 */
 	@Override
 	public DateTime getRunAfter() {
-		if (settings.get(TaskSetting.RunAfter) == null) return null; 
-		return DateTime.parse(settings.get(TaskSetting.RunAfter).toString());
+		if (getsetting(TaskSetting.RunAfter) == null)
+			return null;
+		return DateTime.parse(getsetting(TaskSetting.RunAfter));
 
 	}
 
@@ -437,7 +509,9 @@ public class Task implements TaskLike {
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see de.tuda.p2p.tdf.common.TaskLike#setRunAfter(org.joda.time.DateTime)
 	 */
 	@Override
@@ -445,16 +519,21 @@ public class Task implements TaskLike {
 		setRunAfter(runAfter.toString(formatter));
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see de.tuda.p2p.tdf.common.TaskLike#getTimeout()
 	 */
 	@Override
 	public Integer getTimeout() {
-		if (settings.get(TaskSetting.Timeout) == null) return null;
-		return Integer.parseInt(settings.get(TaskSetting.Timeout).toString());
+		if (getsetting(TaskSetting.Timeout) == null)
+			return null;
+		return Integer.parseInt(getsetting(TaskSetting.Timeout));
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see de.tuda.p2p.tdf.common.TaskLike#setTimeout(java.lang.Integer)
 	 */
 	@Override
@@ -468,18 +547,24 @@ public class Task implements TaskLike {
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see de.tuda.p2p.tdf.common.TaskLike#getWaitAfterSuccess()
 	 */
 	@Override
 	public Integer getWaitAfterSuccess() {
-		if (settings.get(TaskSetting.WaitAfterSuccess) == null) return null;
-		return Integer.valueOf(settings.get(TaskSetting.WaitAfterSuccess).toString());
+		if (getsetting(TaskSetting.WaitAfterSuccess) == null)
+			return null;
+		return Integer.valueOf(getsetting(TaskSetting.WaitAfterSuccess));
 
 	}
 
-	/* (non-Javadoc)
-	 * @see de.tuda.p2p.tdf.common.TaskLike#setWaitAfterSuccess(java.lang.Integer)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * de.tuda.p2p.tdf.common.TaskLike#setWaitAfterSuccess(java.lang.Integer)
 	 */
 	@Override
 	public void setWaitAfterSuccess(Integer waitAfterSuccess) {
@@ -492,17 +577,23 @@ public class Task implements TaskLike {
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see de.tuda.p2p.tdf.common.TaskLike#getWaitAfterSetupError()
 	 */
 	@Override
 	public Integer getWaitAfterSetupError() {
-		if (settings.get(TaskSetting.WaitAfterSetupError) == null) return null;
-		return Integer.valueOf(settings.get(TaskSetting.WaitAfterSetupError).toString());
+		if (getsetting(TaskSetting.WaitAfterSetupError) == null)
+			return null;
+		return Integer.valueOf(getsetting(TaskSetting.WaitAfterSetupError));
 	}
 
-	/* (non-Javadoc)
-	 * @see de.tuda.p2p.tdf.common.TaskLike#setWaitAfterSetupError(java.lang.Integer)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * de.tuda.p2p.tdf.common.TaskLike#setWaitAfterSetupError(java.lang.Integer)
 	 */
 	@Override
 	public void setWaitAfterSetupError(Integer waitAfterSetupError) {
@@ -512,21 +603,27 @@ public class Task implements TaskLike {
 	public void setWaitAfterSetupError(String waitAfterSetupError) {
 		if (waitAfterSetupError != null && !waitAfterSetupError.isEmpty()) {
 			settings.put(TaskSetting.WaitAfterSetupError, waitAfterSetupError);
-			
+
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see de.tuda.p2p.tdf.common.TaskLike#getWaitAfterRunError()
 	 */
 	@Override
 	public Integer getWaitAfterRunError() {
-		if (settings.get(TaskSetting.WaitAfterRunError) == null) return null;
-		return Integer.valueOf(settings.get(TaskSetting.WaitAfterRunError).toString());
+		if (getsetting(TaskSetting.WaitAfterRunError) == null)
+			return null;
+		return Integer.valueOf(getsetting(TaskSetting.WaitAfterRunError));
 	}
 
-	/* (non-Javadoc)
-	 * @see de.tuda.p2p.tdf.common.TaskLike#setWaitAfterRunError(java.lang.Integer)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * de.tuda.p2p.tdf.common.TaskLike#setWaitAfterRunError(java.lang.Integer)
 	 */
 	@Override
 	public void setWaitAfterRunError(Integer waitAfterRunError) {
@@ -539,7 +636,6 @@ public class Task implements TaskLike {
 		}
 	}
 
-	
 	public Long getIndex() {
 		return index;
 	}
@@ -569,7 +665,7 @@ public class Task implements TaskLike {
 
 	/**
 	 * Decides, if this task should still be executed
-	 *
+	 * 
 	 * @return true if this task is expired, false if it is still valid
 	 */
 	public boolean isExpired() {
@@ -581,7 +677,7 @@ public class Task implements TaskLike {
 
 	/**
 	 * Decides, if this task can be executed already
-	 *
+	 * 
 	 * @return true if this task can be executed, false if it is not valid yet
 	 */
 	public boolean isValid() {
@@ -593,7 +689,7 @@ public class Task implements TaskLike {
 
 	/**
 	 * Return the time to wait before the task is valid
-	 *
+	 * 
 	 * @return The time to wait in milliseconds
 	 */
 	public Long validWaitTime() {
@@ -603,7 +699,7 @@ public class Task implements TaskLike {
 
 	/**
 	 * Decides if this task should be requeued
-	 *
+	 * 
 	 * @return true if the task should be requeued, false if not
 	 */
 	public boolean isTimedOut() {
@@ -618,7 +714,7 @@ public class Task implements TaskLike {
 
 	/**
 	 * Returns whether the task is started or not
-	 *
+	 * 
 	 * @return true if started, false if not
 	 */
 	public boolean isStarted() {
@@ -627,7 +723,7 @@ public class Task implements TaskLike {
 
 	/**
 	 * Returns whether the task is finished or not
-	 *
+	 * 
 	 * @return true if finished, false if not
 	 */
 	public boolean isFinished() {
@@ -635,9 +731,9 @@ public class Task implements TaskLike {
 	}
 
 	/**
-	 * "Starts" a task by setting the client id and the started attribute to "now". Used for
-	 * testing purposes.
-	 *
+	 * "Starts" a task by setting the client id and the started attribute to
+	 * "now". Used for testing purposes.
+	 * 
 	 * @param client
 	 *            The client that executes the task
 	 */
@@ -645,30 +741,46 @@ public class Task implements TaskLike {
 		this.setStarted(DateTime.now());
 		setClient(client);
 	}
-	
-	public void applyDefaults(RedisHash rh){
+
+	public void applyDefaults(RedisHash rh) {
+		System.out.println(rh);
 		// set task information
-				if (getInput().isEmpty()) {
-					setInput(rh.get(TaskSetting.Input).toString());
-				}
-				if (getRunBeforeAsString().isEmpty()) {
-					setRunBefore(rh.get(TaskSetting.RunBefore).toString());
-				}
-				if (getRunAfterAsString().isEmpty()) {
-					setRunAfter(rh.get(TaskSetting.RunAfter).toString());
-				}
-				if (getTimeout() == null) {
-					setTimeout(rh.get(TaskSetting.Timeout).toString());
-				}
-				if (getWaitAfterSetupError() == null) {
-					setWaitAfterSetupError(rh.get(TaskSetting.WaitAfterSetupError).toString());
-				}
-				if (getWaitAfterRunError() == null) {
-					setWaitAfterRunError(rh.get(TaskSetting.WaitAfterRunError).toString());
-				}
-				if (getWaitAfterSuccess() == null) {
-					setWaitAfterSuccess(rh.get(TaskSetting.WaitAfterSuccess).toString());
-				}
+		if (getInput() == null || getInput().isEmpty()) {
+			if (rh.containsKey(TaskSetting.Input))
+				setInput(rh.get(TaskSetting.Input).toString());
+		}
+		if (getRunBeforeAsString() == null || getRunBeforeAsString().isEmpty()) {
+			if (rh.containsKey(TaskSetting.RunBefore))
+				setRunBefore(rh.get(TaskSetting.RunBefore).toString());
+		}
+		if (getRunAfterAsString() == null || getRunAfterAsString().isEmpty()) {
+			if (rh.containsKey(TaskSetting.RunAfter))
+				setRunAfter(rh.get(TaskSetting.RunAfter).toString());
+		}
+		if (getTimeout() == null) {
+			if (rh.containsKey(TaskSetting.Timeout))
+				setTimeout(rh.get(TaskSetting.Timeout).toString());
+		}
+		if (getWaitAfterSetupError() == null) {
+			if (rh.containsKey(TaskSetting.WaitAfterSetupError))
+				setWaitAfterSetupError(rh.get(TaskSetting.WaitAfterSetupError)
+						.toString());
+		}
+		if (getWaitAfterRunError() == null) {
+			if (rh.containsKey(TaskSetting.WaitAfterRunError))
+				setWaitAfterRunError(rh.get(TaskSetting.WaitAfterRunError)
+						.toString());
+		}
+		if (getWaitAfterSuccess() == null) {
+			if (rh.containsKey(TaskSetting.WaitAfterSuccess))
+				setWaitAfterSuccess(rh.get(TaskSetting.WaitAfterSuccess)
+						.toString());
+		}
+		if (getWorker() == null) {
+			if (rh.containsKey(TaskSetting.Worker))
+				setWorker(rh.get(TaskSetting.Worker)
+						.toString());
+		}
 
 	}
 

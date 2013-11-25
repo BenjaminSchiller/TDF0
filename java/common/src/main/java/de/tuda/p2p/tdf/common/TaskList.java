@@ -407,6 +407,40 @@ public class TaskList implements TaskLike {
 				}
 
 	}
+	public String asJsonString() {
+		StringBuilder sb = new StringBuilder("{\n");
+		if (getWorker() != null)
+			sb.append("\"worker\": \"").append(getWorker()).append("\",\n");
+		if (getClient() != null)
+			sb.append("\"client: \"").append(getClient()).append("\",\n");
+		if (getStarted() != null)
+			sb.append("\"started: \"").append(getStarted()).append("\",\n");
+		if (getFinished() != null)
+			sb.append("\"finished: \"").append(getFinished()).append("\",\n");
+		if (getRunAfter() != null)
+			sb.append("\"runAfter: \"").append(getRunAfter()).append("\",\n");
+		if (getRunBefore() != null)
+			sb.append("\"runBefore: \"").append(getRunBefore()).append("\",\n");
+		if (getTimeout() != null)
+			sb.append("\"timeout: \"").append(getTimeout()).append("\",\n");
+		if (getWaitAfterSuccess() != null)
+			sb.append("\"waitAfterSuccess: \"").append(getWaitAfterSuccess())
+					.append("\",\n");
+		if (getWaitAfterSetupError() != null)
+			sb.append("\"waitAfterSetupError: \"")
+					.append(getWaitAfterSetupError()).append("\",\n");
+		if (getWaitAfterRunError() != null)
+			sb.append("\"waitAfterRunError: \"").append(getWaitAfterRunError())
+					.append("\",\n");
+		if (getIndex() != null)
+			sb.append("\"index: \"").append(getIndex()).append("\",\n");
+		if (getNamespace() != null)
+			sb.append("\"namespace: \"").append(getNamespace()).append("\",\n");
+		if (getSession() != null)
+			sb.append("\"session: \"").append(getSession()).append("\"\n");
+		sb.append("}");
+		return sb.toString();
+	}
 
 	
 }

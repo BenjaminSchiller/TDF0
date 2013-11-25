@@ -17,8 +17,8 @@ public class AddTask extends CMD{
 		if (!jn.hasFields()) return null;
 		Task t = new Task();
 		RedisHash rh = new RedisHash();
-		for(JsonField i :  jn.getFieldList().get(0).getValue().getFieldList()) {
-			if(i.getName().getText() != "ID"){
+		for(JsonField i :  jn.getFieldList()) {
+			if(i.getName().getText() == "ID"){
 				t.setIndex(Long.valueOf(i.getValue().getText()));
 				break;
 			}
@@ -34,7 +34,7 @@ public class AddTask extends CMD{
 		t.applyDefaults(rh);
 
 		//debugging
-		return t.asString();
+		return t.asJsonString();
 		
 		//t.save(jedis);
 		//return t.getIndex().toString();
@@ -42,6 +42,7 @@ public class AddTask extends CMD{
 	
 	public static void main(String[] args){
 		init();
+		say(Settings.toString());
 		JsonNode jn = parsejson(getInput(args));
 		if(jn.hasElements()){
 			for (JsonNode j : jn.getElements()) System.out.println(add(j));
