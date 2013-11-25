@@ -17,6 +17,10 @@ public class AddTaskList extends CMD{
 		TaskList t = new TaskList();
 		RedisHash rh = new RedisHash();
 		for(JsonField i :  jn.getFieldList().get(0).getValue().getFieldList()) {
+			if(i.getName().getText() != "ID"){
+				t.setIndex(Long.valueOf(i.getValue().getText()));
+				break;
+			}
 			Object v = null;
 			switch(i.getValue().getType()){
 			case NUMBER: 

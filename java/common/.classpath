@@ -11,6 +11,5 @@
 	<classpathentry kind="lib" path="../junit-4.11.jar"/>
 	<classpathentry kind="lib" path="../zip4j_1.3.1.jar"/>
 	<classpathentry kind="lib" path="../argo-3.7.jar"/>
-	<classpathentry kind="lib" path="../ini4j-0.5.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

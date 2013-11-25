@@ -5,6 +5,7 @@ package de.tuda.p2p.tdf.common;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedList;
 
 import org.joda.time.DateTime;
 
@@ -227,5 +228,68 @@ public class Namespace implements TaskLike {
 
 	public long getNewIndex() {
 		return jedis.incr("tdf." + name + ".index");
+	}
+
+	public void applyDefaults(RedisHash rh) {
+		// set task information
+		if (getInput().isEmpty()) {
+			setInput(rh.get(TaskSetting.Input).toString());
+		}
+		if (getRunBeforeAsString().isEmpty()) {
+			setRunBefore(rh.get(TaskSetting.RunBefore).toString());
+		}
+		if (getRunAfterAsString().isEmpty()) {
+			setRunAfter(rh.get(TaskSetting.RunAfter).toString());
+		}
+		if (getTimeout() == null) {
+			setTimeout(rh.get(TaskSetting.Timeout).toString());
+		}
+		if (getWaitAfterSetupError() == null) {
+			setWaitAfterSetupError(rh.get(TaskSetting.WaitAfterSetupError).toString());
+		}
+		if (getWaitAfterRunError() == null) {
+			setWaitAfterRunError(rh.get(TaskSetting.WaitAfterRunError).toString());
+		}
+		if (getWaitAfterSuccess() == null) {
+			setWaitAfterSuccess(rh.get(TaskSetting.WaitAfterSuccess).toString());
+		}
+
+		
+	}
+
+	public Collection<Task> getProcessed() {
+		Collection<Task> tasks = new LinkedList<Task>();
+		for(String id : jedis.smembers("tdf."+getName()+".processed"))
+			tasks.add(new Task(jedis,name,Long.valueOf(id)));
+		return tasks;
+	}
+	public Collection<Task> getRunning() {
+		Collection<Task> tasks = new LinkedList<Task>();
+		for(String id : jedis.smembers("tdf."+getName()+".running"))
+			tasks.add(new Task(jedis,name,Long.valueOf(id)));
+		return tasks;
+	}public Collection<Task> getCompleted() {
+		Collection<Task> tasks = new LinkedList<Task>();
+		for(String id : jedis.smembers("tdf."+getName()+".completed"))
+			tasks.add(new Task(jedis,name,Long.valueOf(id)));
+		return tasks;
+	}
+	public Collection<Task> getQueued() {
+		Collection<Task> tasks = new LinkedList<Task>();
+		for(String id : jedis.smembers("tdf."+getName()+".processed"))
+			tasks.add(new Task(jedis,name,Long.valueOf(id)));
+		return tasks;
+	}
+	public Collection<Task> getAllTasks() {
+		Collection<Task> tasks = new LinkedList<Task>();
+		for(String id : jedis.keys("tdf."+getName()+".task.*"))
+			tasks.add(new Task(jedis,name,Long.valueOf(id.split("\\.")[3])));
+		return tasks;
+	}
+	public Collection<TaskList> getAllTasklists() {
+		Collection<TaskList> tasks = new LinkedList<TaskList>();
+		for(String id : jedis.keys("tdf."+getName()+".tasklist.*"))
+			tasks.add(new TaskList(jedis,name,Long.valueOf(id.split("\\.")[3])));
+		return tasks;
 	}
 }

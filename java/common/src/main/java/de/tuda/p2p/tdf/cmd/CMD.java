@@ -54,4 +54,8 @@ public abstract class CMD {
 	}
 	return Input;
 	}
+
+	protected static void say(String asString) {
+		System.out.println(asString);
+	}
 }

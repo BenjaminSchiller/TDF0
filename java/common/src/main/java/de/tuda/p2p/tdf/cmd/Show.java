@@ -35,8 +35,4 @@ public class Show extends CMD {
 		
 	}
 
-	private static void say(String asString) {
-		System.out.println(asString);
-	}
-
 }

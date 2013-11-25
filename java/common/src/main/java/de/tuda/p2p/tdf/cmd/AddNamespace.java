@@ -1,25 +1,25 @@
 package de.tuda.p2p.tdf.cmd;
 
-import redis.clients.jedis.Jedis;
 import argo.jdom.JsonField;
 import argo.jdom.JsonNode;
+import argo.jdom.JsonNodeType;
+import de.tuda.p2p.tdf.common.Namespace;
 import de.tuda.p2p.tdf.common.RedisHash;
 import de.tuda.p2p.tdf.common.Task;
+import de.tuda.p2p.tdf.common.TaskList;
 import de.tuda.p2p.tdf.common.TaskSetting;
 
 
-public class AddTask extends CMD{
+public class AddNamespace extends CMD{
 	
-	@SuppressWarnings("unused")
-	private static Jedis jedis;
 
-	private static String add(JsonNode jn){
+	private static String addNamespace(JsonNode jn){
 		if (!jn.hasFields()) return null;
-		Task t = new Task();
+		Namespace t = new Namespace();
 		RedisHash rh = new RedisHash();
 		for(JsonField i :  jn.getFieldList().get(0).getValue().getFieldList()) {
-			if(i.getName().getText() != "ID"){
-				t.setIndex(Long.valueOf(i.getValue().getText()));
+			if(i.getName().getText() != "Name"){
+				t.setName(i.getValue().getText());
 				break;
 			}
 			Object v = null;
@@ -27,26 +27,31 @@ public class AddTask extends CMD{
 			case NUMBER: 
 			case STRING: v= i.getValue().getText();
 				break;
+			case ARRAY:	 
+				break;
 			default: return null;
 			}
-			rh.put(TaskSetting.valueOf(i.getName().getText()),v.toString());
+			if (i.getValue().getType() !=JsonNodeType.ARRAY && i.getName().getText() != "Name")
+				rh.put(TaskSetting.valueOf(i.getName().getText()),v.toString());
 		}
+		
 		t.applyDefaults(rh);
-
+		
 		//debugging
 		return t.asString();
 		
 		//t.save(jedis);
 		//return t.getIndex().toString();
 	}
+
 	
 	public static void main(String[] args){
 		init();
 		JsonNode jn = parsejson(getInput(args));
 		if(jn.hasElements()){
-			for (JsonNode j : jn.getElements()) System.out.println(add(j));
+			for (JsonNode j : jn.getElements()) System.out.println(addNamespace(j));
 		}else{
-			System.out.println(add(jn));
+			System.out.println(addNamespace(jn));
 		}
 	}
 
