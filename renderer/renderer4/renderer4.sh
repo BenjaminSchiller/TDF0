@@ -12,8 +12,10 @@ cp $1 $tmpfile
 
 echo $htmlheader >$outfile
 tail -n +2 $tmpfile |\
-while read n a b c d e rest; do
-echo "<tr><td>$n</td><td>$a</td><td>$b</td><td>$c</td><td>$d</td><td>$e</td></tr>"
+while read line; do
+echo "<tr>"
+for i in `echo $line`; echo "\t<td>$i</td>"
+echo "</tr>"
 done>>$outfile
 echo $htmlfooter>>$outfile
 rm -v $tmpfile

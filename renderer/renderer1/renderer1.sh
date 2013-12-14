@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/bin/zsh
+
+outfile=max.dat
 
 function getmax(){
 max=0
@@ -6,7 +8,7 @@ holder=0
 n=0
 for i in $@; do
 this=$((++n))
-[ ${i:2} -gt $max ] && max=${i:2} && holder=$this
+[ ${i} -gt $max ] && max=${i} && holder=$this
 done
 echo $holder
 }
@@ -26,7 +28,7 @@ tmpfile=`mktemp`
 
 cp $1 $tmpfile
 
-winner $tmpfile
+winner $tmpfile > $outfile
 
 rm -v $tmpfile
 exit
