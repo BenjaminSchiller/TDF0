@@ -5,8 +5,6 @@ import argo.jdom.JsonNode;
 import argo.jdom.JsonNodeType;
 import de.tuda.p2p.tdf.common.Namespace;
 import de.tuda.p2p.tdf.common.RedisHash;
-import de.tuda.p2p.tdf.common.Task;
-import de.tuda.p2p.tdf.common.TaskList;
 import de.tuda.p2p.tdf.common.TaskSetting;
 
 
@@ -17,7 +15,7 @@ public class AddNamespace extends CMD{
 		if (!jn.hasFields()) return null;
 		Namespace t = new Namespace();
 		RedisHash rh = new RedisHash();
-		for(JsonField i :  jn.getFieldList().get(0).getValue().getFieldList()) {
+		for(JsonField i :  jn.getFieldList()) {
 			if(i.getName().getText() != "Name"){
 				t.setName(i.getValue().getText());
 				break;
