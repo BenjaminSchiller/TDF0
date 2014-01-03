@@ -71,8 +71,10 @@ public class Namespace implements TaskLike {
 			jedis==null){
 			return -1L;
 		}
-		defaults.save(jedis, HashKey());
 		// save defaults
+		defaults.save(jedis, HashKey());
+		
+		if (! jedis.exists("tdf."+getName()+".index" ) )jedis.set("tdf."+getName()+".index","0");
 		return 0L;
 
 	}
@@ -139,7 +141,7 @@ public class Namespace implements TaskLike {
 		setRunAfter(runAfter.toString());
 	}
 	public Integer getTimeout() {
-		return Integer.valueOf((defaults.get(TaskSetting.Timeout)==null?null:defaults.get(TaskSetting.Timeout).toString()));
+		return (defaults.get(TaskSetting.Timeout)==null?null:Integer.valueOf(defaults.get(TaskSetting.Timeout).toString()));
 	}
 
 	public void setTimeout(Integer timeout) {
@@ -151,7 +153,7 @@ public class Namespace implements TaskLike {
 	}
 
 	public Integer getWaitAfterSuccess() {
-		return Integer.valueOf((defaults.get(TaskSetting.WaitAfterSuccess)==null?null:defaults.get(TaskSetting.WaitAfterSuccess).toString()));
+		return (defaults.get(TaskSetting.WaitAfterSuccess)==null?null:Integer.valueOf(defaults.get(TaskSetting.WaitAfterSuccess).toString()));
 
 	}
 
@@ -165,7 +167,7 @@ public class Namespace implements TaskLike {
 	}
 
 	public Integer getWaitAfterSetupError() {
-		return Integer.valueOf((defaults.get(TaskSetting.WaitAfterSetupError)==null?null:defaults.get(TaskSetting.WaitAfterSetupError).toString()));
+		return defaults.get(TaskSetting.WaitAfterSetupError)==null?null:Integer.valueOf(defaults.get(TaskSetting.WaitAfterSetupError).toString());
  
 	}
 
@@ -178,7 +180,7 @@ public class Namespace implements TaskLike {
 	}
 
 	public Integer getWaitAfterRunError() {
-		return Integer.valueOf((defaults.get(TaskSetting.WaitAfterRunError)==null?null:defaults.get(TaskSetting.WaitAfterRunError).toString()));
+		return (defaults.get(TaskSetting.WaitAfterRunError)==null?null:Integer.valueOf(defaults.get(TaskSetting.WaitAfterRunError).toString()));
 		 
 	}
 
@@ -229,7 +231,7 @@ public class Namespace implements TaskLike {
 	}
 
 	public long getNewIndex() {
-		return jedis.incr("tdf." + name + ".index");
+		return getJedis().incr("tdf." + getName() + ".index");
 	}
 
 	public void applyDefaults(RedisHash rh) {

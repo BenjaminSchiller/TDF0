@@ -128,6 +128,7 @@ public class TaskInterfaceClient {
 			}else break;
 
 		}
+		if (getTaskList() == null) return null;
 		return (ClientTask) getTaskList().getOpenTasks().getany();
 	}
 

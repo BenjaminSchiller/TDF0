@@ -34,10 +34,11 @@ public class TaskList implements TaskLike {
 		this.setJedis(jedis);
 
 	}
-	public TaskList(Jedis jedis, String namespace,Long index) {
-		this(jedis,namespace);
+
+	public TaskList(Jedis jedis, String namespace, Long index) {
+		this(jedis, namespace);
 		setIndex(index);
-		load(jedis,namespace,index);
+		load(jedis, namespace, index);
 	}
 
 	private void setJedis(Jedis jedis) {
@@ -104,18 +105,15 @@ public class TaskList implements TaskLike {
 
 		return counter;
 	}
-	
+
 	public TaskList load(Jedis jedis, String namespace, Long index) {
-		
-		if(
-			jedis==null||
-			namespace==null||
-			namespace==""||
-			index==null){
+
+		if (jedis == null || namespace == null || namespace == ""
+				|| index == null) {
 			return null;
 		}
-		
-		tasks.load(jedis,namespace,SetKey(namespace, index));
+
+		tasks.load(jedis, namespace, SetKey(namespace, index));
 		defaults.load(jedis, HashKey(namespace, index));
 		// load defaults
 		return this;
@@ -123,22 +121,25 @@ public class TaskList implements TaskLike {
 	}
 
 	public Long save(Jedis jedis, String namespace, Long index) {
-		
-		if(
-			jedis==null||
-			namespace==null||
-			namespace==""||
-			index==null){
+
+		if (jedis == null || namespace == null || namespace == ""
+				|| index == null) {
 			return -1L;
 		}
-		tasks.save(jedis,SetKey(namespace, index));
+		setNamespace(namespace);
+		setIndex(index);
+		tasks.save(jedis, SetKey(namespace, index));
 		defaults.save(jedis, HashKey(namespace, index));
 		// save defaults
-		return 0L;
+		return getIndex();
 
 	}
-	public Long save(){
-		return save(jedis,getNamespace(),getIndex());
+
+	public Long save() {
+		if (getIndex() == null) {
+			setIndex((new Namespace(jedis, getNamespace())).getNewIndex());
+		}
+		return save(jedis, getNamespace(), getIndex());
 	}
 
 	public String asString() {
@@ -152,11 +153,15 @@ public class TaskList implements TaskLike {
 	}
 
 	public Long save(Jedis jedis, String namespace) {
+		if (getIndex() == null) {
+			setIndex((new Namespace(jedis, getNamespace())).getNewIndex());
+		}
 		return this.save(jedis, namespace, this.getIndex());
 	}
 
 	public String getWorker() {
-		return defaults.get(TaskSetting.Worker).toString();
+		return defaults.get(TaskSetting.Worker) == null ? null : defaults.get(
+				TaskSetting.Worker).toString();
 	}
 
 	public void setWorker(String worker) {
@@ -164,7 +169,8 @@ public class TaskList implements TaskLike {
 	}
 
 	public String getInput() {
-		return defaults.get(TaskSetting.Input).toString();
+		return defaults.get(TaskSetting.Input) == null ? null : defaults.get(
+				TaskSetting.Input).toString();
 	}
 
 	public void setInput(String input) {
@@ -181,7 +187,7 @@ public class TaskList implements TaskLike {
 	}
 
 	public String getStartedAsString() {
-		return getStarted().toString();
+		return getStarted() == null ? null : getStarted().toString();
 	}
 
 	public DateTime getStarted() {
@@ -198,7 +204,7 @@ public class TaskList implements TaskLike {
 	}
 
 	public String getFinishedAsString() {
-		return getFinished().toString();
+		return getFinished() == null ? null : getFinished().toString();
 	}
 
 	public DateTime getFinished() {
@@ -214,11 +220,12 @@ public class TaskList implements TaskLike {
 	}
 
 	public String getRunBeforeAsString() {
-		return getRunBefore().toString();
+		return getRunBefore() == null ? null : getRunBefore().toString();
 	}
 
 	public DateTime getRunBefore() {
-		return DateTime.parse(defaults.get(TaskSetting.RunBefore).toString());
+		return defaults.get(TaskSetting.RunBefore) == null ? null : DateTime
+				.parse(defaults.get(TaskSetting.RunBefore).toString());
 	}
 
 	public void setRunBefore(String runBefore) {
@@ -231,11 +238,12 @@ public class TaskList implements TaskLike {
 	}
 
 	public String getRunAfterAsString() {
-		return this.getRunAfter().toString();
+		return getRunAfter() == null ? null : getRunAfter().toString();
 	}
 
 	public DateTime getRunAfter() {
-		return DateTime.parse(defaults.get(TaskSetting.RunAfter).toString());
+		return defaults.get(TaskSetting.RunAfter) == null ? null : DateTime
+				.parse(defaults.get(TaskSetting.RunAfter).toString());
 
 	}
 
@@ -249,7 +257,8 @@ public class TaskList implements TaskLike {
 	}
 
 	public Integer getTimeout() {
-		return Integer.valueOf(defaults.get(TaskSetting.Timeout).toString());
+		return defaults.get(TaskSetting.Timeout) == null ? null : Integer
+				.valueOf(defaults.get(TaskSetting.Timeout).toString());
 	}
 
 	public void setTimeout(Integer timeout) {
@@ -261,7 +270,9 @@ public class TaskList implements TaskLike {
 	}
 
 	public Integer getWaitAfterSuccess() {
-		return Integer.valueOf(defaults.get(TaskSetting.WaitAfterSuccess).toString());
+		return defaults.get(TaskSetting.WaitAfterSuccess) == null ? null
+				: Integer.valueOf(defaults.get(TaskSetting.WaitAfterSuccess)
+						.toString());
 
 	}
 
@@ -275,8 +286,10 @@ public class TaskList implements TaskLike {
 	}
 
 	public Integer getWaitAfterSetupError() {
-		return Integer.valueOf(defaults.get(TaskSetting.WaitAfterSetupError).toString());
- 
+		return defaults.get(TaskSetting.WaitAfterSetupError) == null ? null
+				: Integer.valueOf(defaults.get(TaskSetting.WaitAfterSetupError)
+						.toString());
+
 	}
 
 	public void setWaitAfterSetupError(Integer waitAfterSetupError) {
@@ -288,8 +301,10 @@ public class TaskList implements TaskLike {
 	}
 
 	public Integer getWaitAfterRunError() {
-		return Integer.valueOf(defaults.get(TaskSetting.WaitAfterRunError).toString());
-		 
+		return defaults.get(TaskSetting.WaitAfterRunError) == null ? null
+				: Integer.valueOf(defaults.get(TaskSetting.WaitAfterRunError)
+						.toString());
+
 	}
 
 	public void setWaitAfterRunError(Integer waitAfterRunError) {
@@ -317,7 +332,8 @@ public class TaskList implements TaskLike {
 	}
 
 	public String getSession() {
-		return defaults.get(TaskSetting.Session).toString();
+		return defaults.get(TaskSetting.Session) == null ? null : defaults.get(
+				TaskSetting.Session).toString();
 	}
 
 	public void setSession(String session) {
@@ -357,7 +373,7 @@ public class TaskList implements TaskLike {
 	}
 
 	public boolean isFinished() {
-		return (getFinished()!=null);
+		return (getFinished() != null);
 	}
 
 	public void start(String client) {
@@ -369,44 +385,57 @@ public class TaskList implements TaskLike {
 		// TODO Auto-generated method stub
 		return tasks;
 	}
-	
+
 	public RedisTaskSet getOpenTasks() {
 		RedisTaskSet tasks = new RedisTaskSet(getTasks());
-		for (Task task : tasks){
-			if (task.isFinished()) tasks.remove(task);
+		for (Task task : tasks) {
+			if (task.isFinished())
+				tasks.remove(task);
 		}
 		return tasks;
 	}
-	
-	public void applyDefaults(){
-		for (Task t : getTasks()) t.applyDefaults(defaults);
+
+	public void applyDefaults() {
+		for (Task t : getTasks())
+			t.applyDefaults(defaults);
 	}
-	
-	public void applyDefaults(RedisHash rh){
+
+	public void applyDefaults(RedisHash rh) {
 		// set task information
-				if (getInput().isEmpty()) {
-					setInput(rh.get(TaskSetting.Input).toString());
-				}
-				if (getRunBeforeAsString().isEmpty()) {
-					setRunBefore(rh.get(TaskSetting.RunBefore).toString());
-				}
-				if (getRunAfterAsString().isEmpty()) {
-					setRunAfter(rh.get(TaskSetting.RunAfter).toString());
-				}
-				if (getTimeout() == null) {
-					setTimeout(rh.get(TaskSetting.Timeout).toString());
-				}
-				if (getWaitAfterSetupError() == null) {
-					setWaitAfterSetupError(rh.get(TaskSetting.WaitAfterSetupError).toString());
-				}
-				if (getWaitAfterRunError() == null) {
-					setWaitAfterRunError(rh.get(TaskSetting.WaitAfterRunError).toString());
-				}
-				if (getWaitAfterSuccess() == null) {
-					setWaitAfterSuccess(rh.get(TaskSetting.WaitAfterSuccess).toString());
-				}
+		if (getInput() != null && getInput().isEmpty()) {
+			if (rh.get(TaskSetting.Input) != null)
+				setInput(rh.get(TaskSetting.Input).toString());
+		}
+		if (getRunBeforeAsString() != null && getRunBeforeAsString().isEmpty()) {
+			if (rh.get(TaskSetting.RunBefore) != null)
+				setRunBefore(rh.get(TaskSetting.RunBefore).toString());
+		}
+		if (getRunAfterAsString() != null && getRunAfterAsString().isEmpty()) {
+			if (rh.get(TaskSetting.RunAfter) != null)
+				setRunAfter(rh.get(TaskSetting.RunAfter).toString());
+		}
+		if (getTimeout() == null) {
+			if (rh.get(TaskSetting.Timeout) != null)
+				setTimeout(rh.get(TaskSetting.Timeout).toString());
+		}
+		if (getWaitAfterSetupError() == null) {
+			if (rh.get(TaskSetting.WaitAfterSetupError) != null)
+				setWaitAfterSetupError(rh.get(TaskSetting.WaitAfterSetupError)
+						.toString());
+		}
+		if (getWaitAfterRunError() == null) {
+			if (rh.get(TaskSetting.WaitAfterRunError) != null)
+				setWaitAfterRunError(rh.get(TaskSetting.WaitAfterRunError)
+						.toString());
+		}
+		if (getWaitAfterSuccess() == null) {
+			if (rh.get(TaskSetting.WaitAfterSuccess) != null)
+				setWaitAfterSuccess(rh.get(TaskSetting.WaitAfterSuccess)
+						.toString());
+		}
 
 	}
+
 	public String asJsonString() {
 		StringBuilder sb = new StringBuilder("{\n");
 		if (getWorker() != null)
@@ -442,5 +471,4 @@ public class TaskList implements TaskLike {
 		return sb.toString();
 	}
 
-	
 }

@@ -16,31 +16,36 @@ public class AddTaskList extends CMD{
 		if (!jn.hasFields()) return null;
 		TaskList t = new TaskList();
 		RedisHash rh = new RedisHash();
-		for(JsonField i :  jn.getFieldList().get(0).getValue().getFieldList()) {
-			if(i.getName().getText() != "ID"){
+		for (JsonField i : jn.getFieldList()) {
+			if (i.getName().getText().matches("(?i)ID")) {
 				t.setIndex(Long.valueOf(i.getValue().getText()));
-				break;
+				;
+			} else if (i.getName().getText().matches("(?i)Namespace")) {
+				t.setNamespace(i.getValue().getText());
+			} else {
+				Object v = null;
+				switch (i.getValue().getType()) {
+				case NUMBER:
+				case STRING:
+					v = i.getValue().getText();
+					break;
+				default:
+					return null;
+				}
+				try {
+					rh.put(TaskSetting.valueOf(i.getName().getText()),
+							v.toString());
+				} catch (java.lang.IllegalArgumentException e) {
+					say(i.getName().getText());
+				}
+				;
 			}
-			Object v = null;
-			switch(i.getValue().getType()){
-			case NUMBER: 
-			case STRING: v= i.getValue().getText();
-				break;
-			case ARRAY:	for (JsonNode j : i.getValue().getElements()) t.addtask(addTask(j));  
-				break;
-			default: return null;
-			}
-			if (i.getValue().getType() !=JsonNodeType.ARRAY)
-				rh.put(TaskSetting.valueOf(i.getName().getText()),v.toString());
 		}
 		
 		t.applyDefaults(rh);
 		
-		//debugging
-		return t.asString();
-		
-		//t.save(jedis);
-		//return t.getIndex().toString();
+		t.save(jedis);
+		return t.getIndex().toString();
 	}
 
 	

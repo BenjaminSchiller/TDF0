@@ -35,11 +35,9 @@ public class AddNamespace extends CMD{
 		
 		t.applyDefaults(rh);
 		
-		//debugging
-		return t.asString();
 		
-		//t.save(jedis);
-		//return t.getIndex().toString();
+		t.save(jedis);
+		return t.getName().toString();
 	}
 
 	

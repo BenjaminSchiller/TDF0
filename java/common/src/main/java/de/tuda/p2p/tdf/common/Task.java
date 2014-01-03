@@ -246,13 +246,13 @@ public class Task implements TaskLike {
 		jedis.hset(hashKey, "worker", getWorker());
 
 		// set task information
-		if (!getInput().isEmpty()) {
+		if (getInput() != null &&!getInput().isEmpty()) {
 			jedis.hset(hashKey, "input", getInput());
 		}
-		if (!getRunBeforeAsString().isEmpty()) {
+		if ( getRunBeforeAsString() != null && !getRunBeforeAsString().isEmpty()) {
 			jedis.hset(hashKey, "runBefore", getRunBeforeAsString());
 		}
-		if (!getRunAfterAsString().isEmpty()) {
+		if (getRunAfterAsString() != null && !getRunAfterAsString().isEmpty()) {
 			jedis.hset(hashKey, "runAfter", getRunAfterAsString());
 		}
 		if (getTimeout() != null) {
@@ -743,7 +743,6 @@ public class Task implements TaskLike {
 	}
 
 	public void applyDefaults(RedisHash rh) {
-		System.out.println(rh);
 		// set task information
 		if (getInput() == null || getInput().isEmpty()) {
 			if (rh.containsKey(TaskSetting.Input))
