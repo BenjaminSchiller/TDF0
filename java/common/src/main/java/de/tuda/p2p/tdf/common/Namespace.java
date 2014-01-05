@@ -3,6 +3,7 @@
  */
 package de.tuda.p2p.tdf.common;
 
+import java.io.FileNotFoundException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -10,6 +11,7 @@ import java.util.LinkedList;
 import org.joda.time.DateTime;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 
 /**
  * @author georg
@@ -221,7 +223,7 @@ public class Namespace implements TaskLike {
 	private Collection<TaskList> getLists() {
 		Collection<TaskList> lists = new HashSet<TaskList>();
 		for(String id : getJedis().smembers(Setkey())){
-			lists.add(new TaskList(jedis,name,Long.parseLong(id)));
+			try{lists.add(new TaskList(jedis,name,Long.parseLong(id)));}catch(FileNotFoundException e){} // TODO: LOG
 		}
 		return lists;
 	}
@@ -231,7 +233,13 @@ public class Namespace implements TaskLike {
 	}
 
 	public long getNewIndex() {
+		try {
 		return getJedis().incr("tdf." + getName() + ".index");
+		}catch(JedisConnectionException e){
+			Logger.error("Conection to Jedis timed out, shutting down");
+			System.exit(1);
+		}
+		return 0;		
 	}
 
 	public void applyDefaults(RedisHash rh) {
@@ -264,36 +272,38 @@ public class Namespace implements TaskLike {
 	public Collection<Task> getProcessed() {
 		Collection<Task> tasks = new LinkedList<Task>();
 		for(String id : jedis.smembers("tdf."+getName()+".processed"))
-			tasks.add(new Task(jedis,name,Long.valueOf(id)));
+			try{tasks.add(new Task(jedis,name,Long.valueOf(id)));}catch(FileNotFoundException e){} // TODO: LOG
 		return tasks;
 	}
 	public Collection<Task> getRunning() {
 		Collection<Task> tasks = new LinkedList<Task>();
 		for(String id : jedis.smembers("tdf."+getName()+".running"))
-			tasks.add(new Task(jedis,name,Long.valueOf(id)));
+			try{tasks.add(new Task(jedis,name,Long.valueOf(id)));}catch(FileNotFoundException e){} // TODO: LOG
 		return tasks;
 	}public Collection<Task> getCompleted() {
 		Collection<Task> tasks = new LinkedList<Task>();
 		for(String id : jedis.smembers("tdf."+getName()+".completed"))
-			tasks.add(new Task(jedis,name,Long.valueOf(id)));
+			try {
+				tasks.add(new Task(jedis,name,Long.valueOf(id)));
+			}catch(FileNotFoundException e){} // TODO: LOG
 		return tasks;
 	}
 	public Collection<Task> getQueued() {
 		Collection<Task> tasks = new LinkedList<Task>();
-		for(String id : jedis.smembers("tdf."+getName()+".processed"))
-			tasks.add(new Task(jedis,name,Long.valueOf(id)));
+		for(String id : jedis.smembers("tdf."+getName()+".queued"))
+			try{tasks.add(new Task(jedis,name,Long.valueOf(id)));}catch(FileNotFoundException e){} // TODO: LOG
 		return tasks;
 	}
 	public Collection<Task> getAllTasks() {
 		Collection<Task> tasks = new LinkedList<Task>();
 		for(String id : jedis.keys("tdf."+getName()+".task.*"))
-			tasks.add(new Task(jedis,name,Long.valueOf(id.split("\\.")[3])));
+			try{tasks.add(new Task(jedis,name,Long.valueOf(id.split("\\.")[3])));}catch(FileNotFoundException e){} // TODO: LOG
 		return tasks;
 	}
 	public Collection<TaskList> getAllTasklists() {
 		Collection<TaskList> tasks = new LinkedList<TaskList>();
 		for(String id : jedis.keys("tdf."+getName()+".tasklist.*"))
-			tasks.add(new TaskList(jedis,name,Long.valueOf(id.split("\\.")[3])));
+			try {tasks.add(new TaskList(jedis,name,Long.valueOf(id.split("\\.")[3])));}catch(FileNotFoundException e){} // TODO: LOG
 		return tasks;
 	}
 }

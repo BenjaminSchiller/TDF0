@@ -1,5 +1,7 @@
 package de.tuda.p2p.tdf.cmd;
 
+import java.io.FileNotFoundException;
+
 import argo.jdom.JsonNode;
 import de.tuda.p2p.tdf.common.Task;
 import de.tuda.p2p.tdf.common.TaskList;
@@ -7,6 +9,7 @@ import de.tuda.p2p.tdf.common.TaskList;
 public class Show extends CMD {
 	
 	public static void main(String[] args){
+		init();
 		show(parsejson(getInput(args)));
 	}
 	
@@ -26,10 +29,20 @@ public class Show extends CMD {
 		
 		switch(type){
 		case "task":
+			try{
 			say(new Task(jedis,namespace,Long.parseLong(index)).asString());
+			}catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				say(e.getMessage());
+			}
 			break;
 		case "tasklist":
-			say(new TaskList(jedis,namespace,Long.parseLong(index)).asString());
+			try {
+				say(new TaskList(jedis,namespace,Long.parseLong(index)).asString());
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				say(e.getMessage());
+			}
 			break;
 		}
 		

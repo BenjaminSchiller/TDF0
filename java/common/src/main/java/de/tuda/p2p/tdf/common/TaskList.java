@@ -3,6 +3,7 @@
  */
 package de.tuda.p2p.tdf.common;
 
+import java.io.FileNotFoundException;
 import java.util.Set;
 
 import org.joda.time.DateTime;
@@ -35,7 +36,7 @@ public class TaskList implements TaskLike {
 
 	}
 
-	public TaskList(Jedis jedis, String namespace, Long index) {
+	public TaskList(Jedis jedis, String namespace, Long index) throws FileNotFoundException {
 		this(jedis, namespace);
 		setIndex(index);
 		load(jedis, namespace, index);
@@ -106,13 +107,13 @@ public class TaskList implements TaskLike {
 		return counter;
 	}
 
-	public TaskList load(Jedis jedis, String namespace, Long index) {
+	public TaskList load(Jedis jedis, String namespace, Long index) throws FileNotFoundException {
 
 		if (jedis == null || namespace == null || namespace == ""
 				|| index == null) {
 			return null;
 		}
-
+		if (!jedis.exists(HashKey(namespace, index))) throw new FileNotFoundException("tasklist not found");
 		tasks.load(jedis, namespace, SetKey(namespace, index));
 		defaults.load(jedis, HashKey(namespace, index));
 		// load defaults
@@ -144,7 +145,7 @@ public class TaskList implements TaskLike {
 
 	public String asString() {
 		// TODO Auto-generated method stub
-		return this.toString();
+		return this.asJsonString();
 	}
 
 	public Long save(Jedis jedis) {

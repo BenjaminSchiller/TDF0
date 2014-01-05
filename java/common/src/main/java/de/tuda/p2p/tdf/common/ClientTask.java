@@ -1,6 +1,7 @@
 package de.tuda.p2p.tdf.common;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -23,8 +24,9 @@ public class ClientTask extends Task {
 	 *            The Jedis instance
 	 * @param hashKey
 	 *            The task information hash key
+	 * @throws FileNotFoundException 
 	 */
-	public ClientTask(Jedis jedis, String namespace, Long index) {
+	public ClientTask(Jedis jedis, String namespace, Long index) throws FileNotFoundException {
 		super(jedis, namespace, index);
 	}
 

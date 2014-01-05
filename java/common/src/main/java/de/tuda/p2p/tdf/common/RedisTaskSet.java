@@ -1,5 +1,6 @@
 package de.tuda.p2p.tdf.common;
 
+import java.io.FileNotFoundException;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -32,7 +33,7 @@ public class RedisTaskSet extends HashSet<Task> {
 	public boolean load(Jedis jedis, String namespace , String RedisKey){
 		this.clear();
 		for(String index : jedis.smembers(RedisKey)){
-			add(new Task(jedis, namespace, Long.valueOf(index)));
+			try{add(new Task(jedis, namespace, Long.valueOf(index)));}catch(FileNotFoundException e){}// TODO: LOG
 		}
 		return true;
 	}

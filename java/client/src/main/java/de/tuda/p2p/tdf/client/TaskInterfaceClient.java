@@ -1,6 +1,7 @@
 package de.tuda.p2p.tdf.client;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -215,13 +216,13 @@ public class TaskInterfaceClient {
 				Client.logMessage("Queuing list is empty", true);
 				return null;
 			}
-
-			tasklist = new TaskList().load(getJedis(), namespace, Long.valueOf(index));
-			if (tasklist == null) {
+			tasklist = new TaskList();
+			try {
+				tasklist .load(getJedis(), namespace, Long.valueOf(index));
+			} catch ( FileNotFoundException e) {
 				Client.logError("Tasklist '" + index + "' returned null.", true);
 				return null;
 			}
-
 			if (tasklist.isExpired()) {
 				Client.logMessage("Tasklist '" + index + "' is expired.", true);
 
@@ -269,7 +270,13 @@ public class TaskInterfaceClient {
 			return null;
 		}
 
-		return new ClientTask(getJedis(), namespace, index);
+		try {
+			return new ClientTask(getJedis(), namespace, index);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	/**

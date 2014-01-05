@@ -1,5 +1,7 @@
 package de.tuda.p2p.tdf.cmd;
 
+import java.io.FileNotFoundException;
+
 import de.tuda.p2p.tdf.common.TaskList;
 
 public class Requeue extends CMD {
@@ -20,7 +22,12 @@ public class Requeue extends CMD {
 		for (String index : jedis.smembers("tdf." + namespace + ".running")) {
 			String hashKey = "tdf." + namespace + ".task." + index;
 
-			TaskList task = new TaskList(jedis,namespace, Long.valueOf(index));
+			TaskList task;
+			try {
+				task = new TaskList(jedis,namespace, Long.valueOf(index));
+			} catch ( FileNotFoundException e) {
+				break; // TODO Log
+			} 
 
 			if (task != null && task.isTimedOut()) {
 				requeued++;

@@ -1,5 +1,6 @@
 package de.tuda.p2p.tdf.common;
 
+import java.io.FileNotFoundException;
 import java.util.Map.Entry;
 
 import org.joda.time.DateTime;
@@ -104,8 +105,11 @@ public class Task implements TaskLike {
 	 *            The namespace of the task
 	 * @param index
 	 *            The index of the task
+	 * @throws FileNotFoundException 
 	 */
-	public Task(Jedis jedis, String namespace, Long index) {
+	public Task(Jedis jedis, String namespace, Long index) throws FileNotFoundException {
+		if (!jedis.exists(HashKey(namespace, index))) 
+			throw new FileNotFoundException("task not found");
 		String hashKey = HashKey(namespace, index);
 		setIndex(index);
 		setNamespace(namespace);
