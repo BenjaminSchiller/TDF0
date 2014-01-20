@@ -8,7 +8,7 @@ r=[]
 array.each do |pattern|
 
 	if pattern == "logs"
-		r<<"../fakelogs/fake.log" 
+		r<<"../../fakelogs/fake.log" 
 	else
 		r+=Dir[pattern.gsub(/%./,"*")].select{|i|
 			Time.now.to_i-Time.strptime(i,pattern).to_i < interval rescue nil
