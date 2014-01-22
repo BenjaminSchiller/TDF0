@@ -53,7 +53,7 @@ echo '
 unset border
 unset tics
 unset key
-plot x with lines lc rgb "#ffffff"
+plot -99 with lines lc rgb "#ffffff"
 '
 )| gnuplot 
 
