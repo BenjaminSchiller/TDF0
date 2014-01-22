@@ -1,28 +1,34 @@
 #!/bin/zsh
 
-tmpdir=`mktemp -d`
-outfile=$tmpdir/"tmp.png"
-tmpfile=$tmpdir/tmpfile
+outfile="test.png"
+tmpfile=`mktemp`
+
+function nop(){}
 
 function segment(){
 start=$1
 stop=$2
 n=$3
+label=$4
+
+if ! [ "$start" = "$stop" ]; then
 
 Colors=(red green blue orange purple cyan yellow coral khaki greenyellow)
 
 color=$Colors[$((n%10))]
 [ $n -eq 1 ] && color="pink"
+pos=$(((start+stop)/(360)))
 echo -n 'set object '${n}' circle at screen 0.5,0.5 size '
-echo 'screen 0.45 arc ['${start}'   :'${stop}'  ] fillcolor rgb "'${color}'" front'
+echo 'screen 0.4 arc ['${start}'   :'${stop}'  ] fillcolor rgb "'${color}'" front'
+echo "set label $n \"$label\" at screen cos($pos*pi)*0.45+0.5,  screen sin($pos*pi)*0.45+0.5 center"
+fi
 }
 
 
 
 cat $1 > $tmpfile
 
-(echo 'set term png size 600,600
-set output "'${outfile}'"
+(echo 'set term svg size 600,600
 
 set multiplot
 
@@ -33,12 +39,13 @@ start=0
 total=0
 n=1
 typeset -F total
-for element in `cut -d " " -f 4 $tmpfile`; do
-total=$((total+element))
+< $tmpfile | while read label claim success fail; do
+total=$((total+fail))
+nop $((count++))
 done
-for element in `cut -d " " -f1,4 --output-delimiter=, $tmpfile`; do
-end=$((start+(${element#*,}/total*360)))
-segment ${start%.} ${end%.} $n 
+< $tmpfile | while read label claim success fail; do
+end=$((start+(fail/total*360)))
+segment ${start%.} ${end%.} $n $label
 n=$((n+1))
 start=$end
 done
@@ -47,10 +54,9 @@ unset border
 unset tics
 unset key
 plot x with lines lc rgb "#ffffff"
-')| gnuplot 
+'
+)| gnuplot 
 
 
-cat $outfile
-
-rm -r $tmpdir
+rm $tmpfile
 exit
