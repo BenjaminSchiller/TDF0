@@ -1,5 +1,6 @@
 function uniq(){
 read array
+echo $array
 while read line; do
 
 if [ "$line" ] && ! echo $array|grep -q "^$line\$"; then
