@@ -129,7 +129,7 @@ public class TaskList implements TaskLike {
 		}
 		setNamespace(namespace);
 		setIndex(index);
-		tasks.save(jedis, SetKey(namespace, index));
+		tasks.save(jedis, SetKey(namespace, index),namespace);
 		defaults.save(jedis, HashKey(namespace, index));
 		// save defaults
 		return getIndex();

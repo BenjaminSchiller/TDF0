@@ -21,11 +21,15 @@ public class RedisTaskSet extends HashSet<Task> {
 		// TODO Auto-generated constructor stub
 	}
 
-	public boolean save(Jedis jedis, String RedisKey) {
+	public boolean save(Jedis jedis, String RedisKey, String namespace) {
 
 		for (Task v : this) {
+			if(v.getIndex()==null)
+				v.setIndex(new Namespace(jedis, namespace).getNewIndex());
 			jedis.sadd(RedisKey, v.getIndex().toString());
+			v.save(jedis);
 		}
+		
 
 		return true;
 	}
