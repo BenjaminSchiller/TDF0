@@ -42,6 +42,7 @@ public class AddTaskList extends CMD{
 							v.toString());
 				} catch (java.lang.IllegalArgumentException e) {
 					say(i.getName().getText());
+					System.exit(1);
 				}
 				;
 			}
