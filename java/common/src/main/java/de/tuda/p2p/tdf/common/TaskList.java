@@ -85,7 +85,7 @@ public class TaskList implements TaskLike {
 	 * @return the number of Tasks added (0 or 1)
 	 */
 	public long addtask(Task task) {
-		if (tasks.add(task))
+		if (task != null && tasks.add(task))
 			return 1L;
 
 		return 0L;

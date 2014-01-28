@@ -3,6 +3,7 @@ package de.tuda.p2p.tdf.cmd;
 import argo.jdom.JsonField;
 import argo.jdom.JsonNode;
 import argo.jdom.JsonNodeType;
+import argo.jdom.JsonObjectNodeBuilder;
 import de.tuda.p2p.tdf.common.RedisHash;
 import de.tuda.p2p.tdf.common.Task;
 import de.tuda.p2p.tdf.common.TaskList;
@@ -25,6 +26,10 @@ public class AddTaskList extends CMD{
 			} else {
 				Object v = null;
 				switch (i.getValue().getType()) {
+				case ARRAY:
+					for (JsonNode task : i.getValue().getElements())
+						t.addtask(addTask(task));
+					break;
 				case NUMBER:
 				case STRING:
 					v = i.getValue().getText();
