@@ -139,8 +139,9 @@ public class TaskList implements TaskLike {
 	public Long save() {
 		if (getIndex() == null) {
 			setIndex((new Namespace(jedis, getNamespace())).getNewIndex());
-			System.out.println("set index: "+this.getIndex().toString());
 		}
+		System.out.println("set index: "+this.getIndex().toString());
+		
 		return save(jedis, getNamespace(), getIndex());
 	}
 
