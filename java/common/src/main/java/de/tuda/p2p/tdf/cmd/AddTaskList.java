@@ -58,7 +58,15 @@ public class AddTaskList extends CMD{
 	private static Task addTask(JsonNode jn){
 		if (!jn.hasFields()) return null;
 		RedisHash rh = new RedisHash();
+		Task t = new Task();
 		for(JsonField i :  jn.getFieldList()) {
+			if (i.getName().getText().matches("(?i)ID")) {
+				t.setIndex(Long.valueOf(i.getValue().getText()));
+				;
+			} else if (i.getName().getText().matches("(?i)Namespace")) {
+				t.setNamespace(i.getValue().getText());
+			} else {
+			
 			Object v = null;
 			switch(i.getValue().getType()){
 			case NUMBER: 
@@ -67,8 +75,9 @@ public class AddTaskList extends CMD{
 			default: return null;
 			}
 			rh.put(TaskSetting.valueOf(i.getName().getText()),v.toString());
+			}
 		}
-		Task t = new Task(rh);
+		t.applyDefaults(rh);
 
 		//debugging
 		return t;
