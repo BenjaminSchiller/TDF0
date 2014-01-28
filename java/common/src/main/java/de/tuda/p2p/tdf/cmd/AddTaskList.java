@@ -58,7 +58,7 @@ public class AddTaskList extends CMD{
 	private static Task addTask(JsonNode jn){
 		if (!jn.hasFields()) return null;
 		RedisHash rh = new RedisHash();
-		for(JsonField i :  jn.getFieldList().get(0).getValue().getFieldList()) {
+		for(JsonField i :  jn.getFieldList()) {
 			Object v = null;
 			switch(i.getValue().getType()){
 			case NUMBER: 
