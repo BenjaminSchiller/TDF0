@@ -22,6 +22,7 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
+import de.tuda.p2p.tdf.common.Logger;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 
@@ -54,7 +55,6 @@ public class Client {
 	public static void main(String... args) {
 		try {
 			loadConfig();
-
 			// parse the command line options
 			CommandLineParser parser = new PosixParser();
 			CommandLine cmd = null;
@@ -86,7 +86,6 @@ public class Client {
 			if (cmd != null && cmd.hasOption("help")) {
 				printHelp(null);
 			}
-
 			Thread t = new TaskExecutor(waitQueueEmpty, waitQueueExpired, waitAfterSuccess,
 					waitAfterSetupError, waitAfterRunError, shutdown, clientId, host,
 					port, index, auth, workingDir, namespaces);

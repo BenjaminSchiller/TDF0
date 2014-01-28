@@ -19,6 +19,8 @@ import org.joda.time.DateTime;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import de.tuda.p2p.tdf.common.ClientTask;
+import de.tuda.p2p.tdf.common.Logger;
+import de.tuda.p2p.tdf.common.Task;
 import de.tuda.p2p.tdf.common.TaskList;
 
 public class TaskInterfaceClient {
@@ -249,7 +251,11 @@ public class TaskInterfaceClient {
 			Client.logMessage("Waiting for the task '" + index + "' to get valid...");
 			Thread.sleep(tasklist.validWaitTime());
 		}
-
+		
+		Logger.debug("Claim_Tasklist,"+clientId+","+tasklist.getNamespace()+"."+tasklist.getIndex());
+		for (Task task : tasklist.getTasks())
+			Logger.debug("Claim_Task,"+clientId+","+task.getNamespace()+"."+task.getIndex());
+		
 		return tasklist;
 	}
 
@@ -404,6 +410,8 @@ public class TaskInterfaceClient {
 	public void fail(ClientTask task, String errorMessage) {
 		Client.logError("Task '" + task.getNamespace() + "'.'"
 				+ task.getIndex() + "' error: " + errorMessage);
+		Logger.error("Task_Fail,"+clientId+","+task.getNamespace() + "."
+				+ task.getIndex());
 		task.setError(errorMessage);
 		task.setFinished(DateTime.now());
 

@@ -6,6 +6,7 @@ import java.util.List;
 import org.joda.time.DateTime;
 
 import de.tuda.p2p.tdf.common.ClientTask;
+import de.tuda.p2p.tdf.common.Logger;
 
 public class TaskExecutor extends Thread {
 
@@ -17,6 +18,7 @@ public class TaskExecutor extends Thread {
 	private Integer shutdown;
 	private TaskInterfaceClient taskInterface;
 	private File workingDir;
+	private String clientId;
 
 	/**
 	 * Constructor
@@ -55,6 +57,7 @@ public class TaskExecutor extends Thread {
 		this.workingDir = workingDir;
 		this.taskInterface = new TaskInterfaceClient(clientId, host, port,
 				index, auth, namespaces);
+		this.clientId=clientId;
 
 		if ( ! workingDir.exists()) {
 			Client.logMessage("Directory '" + workingDir.getAbsolutePath() + "' does not exist, create it.", true);
@@ -62,6 +65,7 @@ public class TaskExecutor extends Thread {
 		}
 
 		Client.logMessage("Start...");
+		Logger.debug("Client_Init,"+clientId);
 	}
 
 	/**
@@ -81,6 +85,7 @@ public class TaskExecutor extends Thread {
 				} else {
 					try {
 						Client.logMessage("Execute task '" + task.toString() + "'");
+						Logger.debug("Task_Init,"+clientId+","+task.getNamespace()+"."+task.getIndex());
 
 						// execute task
 						task.setBaseDir(workingDir);
@@ -94,7 +99,9 @@ public class TaskExecutor extends Thread {
 
 							throw new TaskException("Setup script did not exit with 0.");
 						}
-
+						
+						Logger.debug("Task_Success,"+clientId+","+task.getNamespace()+"."+task.getIndex());
+						
 						// wait some time
 						waitSomeTime(task.getWaitAfterSuccess(), waitAfterSuccess);
 					} catch (TaskException e) {
@@ -118,6 +125,7 @@ public class TaskExecutor extends Thread {
 			if (shutdown != null) {
 				if (start.plusMillis(shutdown).isBeforeNow()) {
 					Client.logMessage("Shutting down.");
+					Logger.debug("Client_shutdown,"+clientId);
 					break;
 				}
 			}
