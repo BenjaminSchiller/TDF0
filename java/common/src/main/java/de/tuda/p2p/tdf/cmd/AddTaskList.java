@@ -20,14 +20,10 @@ public class AddTaskList extends CMD{
 		for (JsonField i : jn.getFieldList()) {
 			if (i.getName().getText().matches("(?i)ID")) {
 				t.setIndex(Long.valueOf(i.getValue().getText()));
-				System.out.println("index");
 			} else if (i.getName().getText().matches("(?i)Namespace")) {
 				t.setNamespace(i.getValue().getText());
-				System.out.println("namespace");
 			} else if (i.getName().getText().matches("(?i)Namespace")) {
 				for (JsonNode task : i.getValue().getElements())
-					t.addtask(addTask(task));
-				System.out.println("tasks: "+i.getValue().getElements().size());
 				break;
 			} else {
 				Object v = null;
