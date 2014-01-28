@@ -23,13 +23,13 @@ public class AddTaskList extends CMD{
 				;
 			} else if (i.getName().getText().matches("(?i)Namespace")) {
 				t.setNamespace(i.getValue().getText());
+			} else if (i.getName().getText().matches("(?i)Namespace")) {
+				for (JsonNode task : i.getValue().getElements())
+					t.addtask(addTask(task));
+				break;
 			} else {
 				Object v = null;
 				switch (i.getValue().getType()) {
-				case ARRAY:
-					for (JsonNode task : i.getValue().getElements())
-						t.addtask(addTask(task));
-					break;
 				case NUMBER:
 				case STRING:
 					v = i.getValue().getText();
@@ -80,10 +80,10 @@ public class AddTaskList extends CMD{
 		t.applyDefaults(rh);
 
 		//debugging
-		return t;
+		//return t;
 		
-		//t.save(jedis);
-		//return t.getIndex().toString();
+		t.save(jedis);
+		return t.getIndex().toString();
 	}
 	
 	public static void main(String[] args){
