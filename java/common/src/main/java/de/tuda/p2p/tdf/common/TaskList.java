@@ -139,12 +139,12 @@ public class TaskList implements TaskLike {
 	public Long save() {
 		if (getIndex() == null) {
 			setIndex((new Namespace(jedis, getNamespace())).getNewIndex());
+			System.out.println("set index: "+this.getIndex().toString());
 		}
 		return save(jedis, getNamespace(), getIndex());
 	}
 
 	public String asString() {
-		// TODO Auto-generated method stub
 		return this.asJsonString();
 	}
 
@@ -383,7 +383,6 @@ public class TaskList implements TaskLike {
 	}
 
 	public RedisTaskSet getTasks() {
-		// TODO Auto-generated method stub
 		return tasks;
 	}
 

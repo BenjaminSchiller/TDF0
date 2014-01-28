@@ -87,9 +87,9 @@ public class AddTaskList extends CMD{
 		init();
 		JsonNode jn = parsejson(getInput(args));
 		if(jn.hasElements()){
-			for (JsonNode j : jn.getElements()) System.out.println("added task: "+addTaskList(j));
+			for (JsonNode j : jn.getElements()) System.out.println(addTaskList(j));
 		}else{
-			System.out.println("added task: "+addTaskList(jn));
+			System.out.println(addTaskList(jn));
 		}
 	}
 
