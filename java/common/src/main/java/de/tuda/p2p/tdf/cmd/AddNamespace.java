@@ -37,6 +37,7 @@ public class AddNamespace extends CMD{
 		
 		
 		t.save(jedis);
+		jedis.sadd("tdf.namespaces",t.getName().toString());
 		return t.getName().toString();
 	}
 
