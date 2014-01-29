@@ -126,6 +126,7 @@ public class TaskInterfaceClient {
 		}
 		if (getTaskList() == null || getTaskList().getOpenTasks().isEmpty())
 		for (String namespace : this.namespaces) {
+			Client.logMessage(namespace);
 			if (getTaskList() == null || getTaskList().getOpenTasks().isEmpty()) {
 				setTaskList(getTaskListToExecute(namespace, waitQueueExpired));
 			}else break;
