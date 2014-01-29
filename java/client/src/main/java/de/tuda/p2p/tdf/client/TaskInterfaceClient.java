@@ -81,7 +81,6 @@ public class TaskInterfaceClient {
 	 * @return The Jedis object
 	 */
 	public Jedis getJedis() {
-		Client.logMessage(jedis.get("tdf.test.index"));
 		Integer i = 0;
 		while ( ! jedis.isConnected() || i < 10) {
 			i++;
@@ -124,11 +123,9 @@ public class TaskInterfaceClient {
 			// execute tasks from all namespaces
 			Client.logMessage("Execute tasks from all namespaces", true);
 			namespaces = new ArrayList<String>(getJedis().smembers("tdf.namespaces"));
-			Client.logMessage("got Namespace "+getJedis().smembers("tdf.namespaces"));
 		}
 		if (getTaskList() == null || getTaskList().getOpenTasks().isEmpty())
 		for (String namespace : this.namespaces) {
-			Client.logMessage(namespace);
 			if (getTaskList() == null || getTaskList().getOpenTasks().isEmpty()) {
 				setTaskList(getTaskListToExecute(namespace, waitQueueExpired));
 			}else break;
