@@ -47,7 +47,7 @@ public class AddTaskList extends CMD{
 		}
 		
 		t.applyDefaults(rh);
-		say("compiled");
+		say("compiled, # of tasks: "+t.getTasks().size());
 		return Long.toString( t.save(jedis),16);
 	}
 
