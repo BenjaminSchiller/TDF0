@@ -129,20 +129,22 @@ public class TaskList implements TaskLike {
 		}
 		setNamespace(namespace);
 		setIndex(index);
-		tasks.save(jedis, SetKey(namespace, index),namespace);
-		defaults.save(jedis, HashKey(namespace, index));
-		// save defaults
-		return getIndex();
+		return save(jedis);
 
 	}
 
 	public Long save() {
+		if (getNamespace() == null || getNamespace().isEmpty())
+			return -1L;
 		if (getIndex() == null) {
 			setIndex((new Namespace(jedis, getNamespace())).getNewIndex());
 		}
 		System.out.println("set index: "+this.getIndex().toString());
 		
-		return save(jedis, getNamespace(), getIndex());
+		tasks.save(jedis, SetKey(getNamespace(), getIndex()),getNamespace());
+		defaults.save(jedis, HashKey(getNamespace(), getIndex()));
+		// save defaults
+		return getIndex();
 	}
 
 	public String asString() {
@@ -150,15 +152,14 @@ public class TaskList implements TaskLike {
 	}
 
 	public Long save(Jedis jedis) {
-		return this.save(jedis, this.getNamespace());
+		this.jedis=jedis;
+		return save();
 
 	}
 
 	public Long save(Jedis jedis, String namespace) {
-		if (getIndex() == null) {
-			setIndex((new Namespace(jedis, getNamespace())).getNewIndex());
-		}
-		return this.save(jedis, namespace, this.getIndex());
+		setNamespace(namespace);
+		return this.save(jedis);
 	}
 
 	public String getWorker() {
