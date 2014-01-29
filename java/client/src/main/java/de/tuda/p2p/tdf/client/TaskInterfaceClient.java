@@ -81,7 +81,7 @@ public class TaskInterfaceClient {
 	 * @return The Jedis object
 	 */
 	public Jedis getJedis() {
-		Client.logMessage(jedis.smembers("tdf.namespaces").toString());
+		Client.logMessage(jedis.get("tdf.test.index"));
 		Integer i = 0;
 		while ( ! jedis.isConnected() || i < 10) {
 			i++;
