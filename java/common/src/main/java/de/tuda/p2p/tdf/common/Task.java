@@ -468,7 +468,8 @@ public class Task implements TaskLike {
 	public DateTime getRunBefore() {
 		if (getsetting(TaskSetting.RunBefore) == null)
 			return null;
-		return DateTime.parse(getsetting(TaskSetting.RunBefore));
+		return formatter.parseDateTime(getsetting(TaskSetting.RunBefore));
+
 	}
 
 	public void setRunBefore(String runBefore) {
@@ -503,7 +504,7 @@ public class Task implements TaskLike {
 	public DateTime getRunAfter() {
 		if (getsetting(TaskSetting.RunAfter) == null)
 			return null;
-		return DateTime.parse(getsetting(TaskSetting.RunAfter));
+		return formatter.parseDateTime(getsetting(TaskSetting.RunAfter));
 
 	}
 
