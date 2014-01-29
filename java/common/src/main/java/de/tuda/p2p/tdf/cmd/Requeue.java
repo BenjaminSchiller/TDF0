@@ -30,17 +30,10 @@ public class Requeue extends CMD {
 			} 
 
 			if (task != null && task.isTimedOut()) {
+				task.requeue();
 				requeued++;
 
-				// remove task from the running set
-				jedis.srem("tdf." + namespace + ".running", index);
-
-				// remove client and started information
-				jedis.hdel(hashKey, "started");
-				jedis.hdel(hashKey, "client");
-
-				// add task to the front of the queuing list
-				jedis.lpush("tdf." + namespace + ".queuing", index);
+				
 			}
 		}
 

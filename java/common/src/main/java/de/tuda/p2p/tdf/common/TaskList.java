@@ -473,4 +473,18 @@ public class TaskList implements TaskLike {
 		return sb.toString();
 	}
 
+	public void requeue() {
+		// remove task from the running set
+		jedis.srem("tdf." + namespace + ".running", getIndex().toString());
+
+		// remove client and started information
+		jedis.hdel(HashKey(getNamespace(), getIndex()), "started");
+		jedis.hdel(HashKey(getNamespace(), getIndex()), "client");
+
+		// add task to the front of the queuing list
+		jedis.lpush("tdf." + namespace + ".queuing", getIndex().toString());
+		// TODO Auto-generated method stub
+		
+	}
+
 }
