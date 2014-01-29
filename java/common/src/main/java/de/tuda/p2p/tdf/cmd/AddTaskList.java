@@ -24,7 +24,7 @@ public class AddTaskList extends CMD{
 				t.setNamespace(i.getValue().getText());
 			} else if (i.getName().getText().matches("(?i)tasks")) {
 				for (JsonNode task : i.getValue().getElements())
-				break;
+					t.addtask(addTask(task));
 			} else {
 				Object v = null;
 				switch (i.getValue().getType()) {
