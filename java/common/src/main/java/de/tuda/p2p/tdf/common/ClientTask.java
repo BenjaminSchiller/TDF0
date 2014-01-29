@@ -32,6 +32,10 @@ public class ClientTask extends Task {
 
 	public ClientTask() {
 	}
+	
+	public ClientTask(Task task) throws FileNotFoundException{
+		super(task.getJedis(),task.getNamespace(),task.getIndex());
+	}
 
 	/**
 	 * Returns ${namespace}.${index}

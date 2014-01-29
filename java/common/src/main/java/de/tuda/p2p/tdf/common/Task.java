@@ -34,6 +34,8 @@ public class Task implements TaskLike {
 
 	private String session;
 
+	private Jedis jedis;
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -129,6 +131,12 @@ public class Task implements TaskLike {
 		setWorker(jedis.hget(hashKey, "worker"));
 		setStarted(jedis.hget(hashKey, "started"));
 		setSession(jedis.hget(hashKey, "session"));
+		setJedis(jedis);
+	}
+
+	private void setJedis(Jedis jedis) {
+		this.jedis=jedis;
+		
 	}
 
 	public Task() {
@@ -188,6 +196,10 @@ public class Task implements TaskLike {
 			}
 		}
 
+	}
+
+	public Task(Task task) {
+		
 	}
 
 	/**
@@ -786,6 +798,11 @@ public class Task implements TaskLike {
 						.toString());
 		}
 
+	}
+
+	public Jedis getJedis() {
+		// TODO Auto-generated method stub
+		return jedis;
 	}
 
 }

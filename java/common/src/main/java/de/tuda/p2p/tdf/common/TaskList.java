@@ -487,4 +487,9 @@ public class TaskList implements TaskLike {
 		
 	}
 
+	public void deltask(Task t) {
+		tasks.remove(t);
+		
+	}
+
 }

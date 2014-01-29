@@ -42,7 +42,7 @@ public class RedisTaskSet extends HashSet<Task> {
 		return true;
 	}
 
-	public TaskLike getany() {
+	public Task getany() {
 		return this.iterator().next();
 	}
 
