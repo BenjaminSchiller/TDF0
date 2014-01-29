@@ -325,6 +325,7 @@ public class Client {
 	 *            true if the message should only be printed in verbose mode
 	 */
 	public static void logError(String message, boolean debug) {
+		Logger.log(message);
 		if (debug) {
 			if (verbose) {
 				System.err.println(DateTime.now().toString(formatter) + " | " + message);
