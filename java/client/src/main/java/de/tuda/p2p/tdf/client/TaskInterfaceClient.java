@@ -123,7 +123,7 @@ public class TaskInterfaceClient {
 			// execute tasks from all namespaces
 			Client.logMessage("Execute tasks from all namespaces", true);
 			namespaces = new ArrayList<String>(getJedis().smembers("tdf.namespaces"));
-			Client.logMessage("got Namespace "+namespaces);
+			Client.logMessage("got Namespace "+getJedis().smembers("tdf.namespaces"));
 		}
 		if (getTaskList() == null || getTaskList().getOpenTasks().isEmpty())
 		for (String namespace : this.namespaces) {
