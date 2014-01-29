@@ -33,7 +33,7 @@ public class AddTaskList extends CMD{
 					v = i.getValue().getText();
 					break;
 				default:
-					return null;
+					say("ignoring "+i.toString());
 				}
 				try {
 					rh.put(TaskSetting.valueOf(i.getName().getText()),
