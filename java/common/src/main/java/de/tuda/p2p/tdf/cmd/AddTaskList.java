@@ -47,8 +47,9 @@ public class AddTaskList extends CMD{
 		}
 		
 		t.applyDefaults(rh);
+		t.save(jedis);
 		t.requeue();
-		return Long.toString( t.save(jedis),16);
+		return Long.toString( t.getIndex(),16);
 	}
 
 	
