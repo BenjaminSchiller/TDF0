@@ -22,7 +22,7 @@ public class AddTaskList extends CMD{
 				t.setIndex(Long.valueOf(i.getValue().getText()));
 			} else if (i.getName().getText().matches("(?i)Namespace")) {
 				t.setNamespace(i.getValue().getText());
-			} else if (i.getName().getText().matches("(?i)Namespace")) {
+			} else if (i.getName().getText().matches("(?i)tasks")) {
 				for (JsonNode task : i.getValue().getElements())
 				break;
 			} else {
