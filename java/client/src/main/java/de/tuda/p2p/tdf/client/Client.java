@@ -304,9 +304,9 @@ public class Client {
 	 */
 	public static void logMessage(String message, boolean debug) {
 		if (debug) {
-			if (verbose) {
+			//if (verbose) {
 				System.out.println(DateTime.now().toString(formatter) + " | " + message);
-			}
+			//}
 		} else {
 			System.out.println(DateTime.now().toString(formatter) + " | " + message);
 		}

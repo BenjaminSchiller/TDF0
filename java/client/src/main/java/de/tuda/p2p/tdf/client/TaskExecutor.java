@@ -73,7 +73,6 @@ public class TaskExecutor extends Thread {
 	 */
 	@Override
 	public void run() {
-		Client.logMessage("run");
 		DateTime start = DateTime.now();
 		while (true) {
 			try {
