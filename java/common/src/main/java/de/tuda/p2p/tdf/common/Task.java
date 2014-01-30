@@ -805,6 +805,11 @@ public class Task implements TaskLike {
 	}
 
 	public void requeue() {
+		if(getJedis() != null && getJedis().isConnected())
+			requeue(getJedis());
+	}
+	
+	public void requeue(Jedis jedis) {
 		jedis.srem("tdf." + getNamespace() + ".running", getIndex().toString());
 
 		// remove client and started information
