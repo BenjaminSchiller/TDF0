@@ -133,6 +133,7 @@ public class TaskInterfaceClient {
 		}
 		if (getTaskList() == null) return null;
 		Task t =getTaskList().getOpenTasks().getany();
+		getTaskList().deltask(t);
 		try {
 			return new ClientTask(t);
 		} catch (FileNotFoundException e) {

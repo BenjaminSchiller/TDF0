@@ -112,26 +112,16 @@ public class Task implements TaskLike {
 	public Task(Jedis jedis, String namespace, Long index) throws FileNotFoundException {
 		if (!jedis.exists(HashKey(namespace, index))) 
 			throw new FileNotFoundException("task not found");
-		String hashKey = HashKey(namespace, index);
+		load(jedis,namespace,index);
+	}
+
+	private void load(Jedis jedis, String namespace, Long index) {
+		
 		setIndex(index);
 		setNamespace(namespace);
-
-		setClient(jedis.hget(hashKey, "client"));
-		setError(jedis.hget(hashKey, "error"));
-		setRunBefore(jedis.hget(hashKey, "runBefore"));
-		setRunAfter(jedis.hget(hashKey, "runAfter"));
-		setFinished(jedis.hget(hashKey, "finished"));
-		setInput(jedis.hget(hashKey, "input"));
-		setLog(jedis.hget(hashKey, "log"));
-		setOutput(jedis.hget(hashKey, "output"));
-		setTimeout(jedis.hget(hashKey, "timeout"));
-		setWaitAfterSetupError(jedis.hget(hashKey, "waitAfterSetupError"));
-		setWaitAfterRunError(jedis.hget(hashKey, "waitAfterRunError"));
-		setWaitAfterSuccess(jedis.hget(hashKey, "waitAfterSuccess"));
-		setWorker(jedis.hget(hashKey, "worker"));
-		setStarted(jedis.hget(hashKey, "started"));
-		setSession(jedis.hget(hashKey, "session"));
 		setJedis(jedis);
+		load();	
+		
 	}
 
 	private void setJedis(Jedis jedis) {
@@ -820,6 +810,26 @@ public class Task implements TaskLike {
 		// add task to the front of the queuing list
 		jedis.lpush("tdf." + getNamespace() + ".queuing", getIndex().toString());
 		// TODO Auto-generated method stub
+	}
+
+	public void load() {
+		String hashKey = HashKey(getNamespace(), getIndex());
+		setClient(getJedis().hget(hashKey, "client"));
+		setError(getJedis().hget(hashKey, "error"));
+		setRunBefore(getJedis().hget(hashKey, "runBefore"));
+		setRunAfter(getJedis().hget(hashKey, "runAfter"));
+		setFinished(getJedis().hget(hashKey, "finished"));
+		setInput(getJedis().hget(hashKey, "input"));
+		setLog(getJedis().hget(hashKey, "log"));
+		setOutput(getJedis().hget(hashKey, "output"));
+		setTimeout(getJedis().hget(hashKey, "timeout"));
+		setWaitAfterSetupError(getJedis().hget(hashKey, "waitAfterSetupError"));
+		setWaitAfterRunError(getJedis().hget(hashKey, "waitAfterRunError"));
+		setWaitAfterSuccess(getJedis().hget(hashKey, "waitAfterSuccess"));
+		setWorker(getJedis().hget(hashKey, "worker"));
+		setStarted(getJedis().hget(hashKey, "started"));
+		setSession(getJedis().hget(hashKey, "session"));
+	
 	}
 
 }

@@ -391,6 +391,7 @@ public class TaskList implements TaskLike {
 	public RedisTaskSet getOpenTasks() {
 		RedisTaskSet tasks = new RedisTaskSet(getTasks());
 		for (Task task : tasks) {
+			task.load();
 			if (task.isFinished())
 				tasks.remove(task);
 		}
