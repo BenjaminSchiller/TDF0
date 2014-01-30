@@ -221,7 +221,7 @@ public class TaskInterfaceClient {
 		Client.logMessage("Get tasklist from namespace: " + namespace, true);
 		Long firstExpiredIndex = null;
 		do {
-			index = getJedis().lpop("tdf." + namespace + ".queuing");
+			index = getJedis().lpop("tdf." + namespace + ".queuinglists");
 			if (index == null) {
 				Client.logMessage("Queuing list is empty", true);
 				return null;

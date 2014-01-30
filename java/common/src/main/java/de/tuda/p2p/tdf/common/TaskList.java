@@ -482,7 +482,7 @@ public class TaskList implements TaskLike {
 		jedis.hdel(HashKey(getNamespace(), getIndex()), "client");
 
 		// add task to the front of the queuing list
-		jedis.lpush("tdf." + getNamespace() + ".queuing", getIndex().toString());
+		jedis.lpush("tdf." + getNamespace() + ".queuinglists", getIndex().toString());
 		// TODO Auto-generated method stub
 		for(Task task: getTasks()) task.requeue(jedis);
 		
