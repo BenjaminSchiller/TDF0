@@ -801,8 +801,19 @@ public class Task implements TaskLike {
 	}
 
 	public Jedis getJedis() {
-		// TODO Auto-generated method stub
 		return jedis;
+	}
+
+	public void requeue() {
+		jedis.srem("tdf." + getNamespace() + ".running", getIndex().toString());
+
+		// remove client and started information
+		jedis.hdel(HashKey(getNamespace(), getIndex()), "started");
+		jedis.hdel(HashKey(getNamespace(), getIndex()), "client");
+
+		// add task to the front of the queuing list
+		jedis.lpush("tdf." + getNamespace() + ".queuing", getIndex().toString());
+		// TODO Auto-generated method stub
 	}
 
 }
