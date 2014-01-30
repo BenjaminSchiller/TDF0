@@ -84,6 +84,8 @@ public class TaskExecutor extends Thread {
 					sleep(waitQueueEmpty);
 				} else {
 					try {
+						task.start(clientId);
+						
 						Client.logMessage("Execute task '" + task.toString() + "'");
 						Logger.debug("Task_Init,"+clientId+","+task.getNamespace()+"."+task.getIndex());
 

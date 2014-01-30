@@ -757,6 +757,7 @@ public class Task implements TaskLike {
 	public void start(String client) {
 		this.setStarted(DateTime.now());
 		setClient(client);
+		save(getJedis());
 	}
 
 	public void applyDefaults(RedisHash rh) {
