@@ -41,7 +41,9 @@ public class AddTask extends CMD{
 			}
 		}
 		t.applyDefaults(rh);
+		if (t.getNamespace() == null || t.getNamespace().isEmpty()) return t.getIndex().toString()+": no namespace given, not added";
 		t.save(jedis);
+		jedis.sadd("tdf."+t.getNamespace()+".new",t.getIndex().toString());
 		return t.getIndex().toString();
 	}
 	
