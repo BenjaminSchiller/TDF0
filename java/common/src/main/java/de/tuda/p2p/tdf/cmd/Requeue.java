@@ -15,8 +15,6 @@ public class Requeue extends CMD {
 		requeue();
 		int count=0;
 		for (TaskList t : Tasklists) {
-			t.save(jedis);
-			t.requeue();
 			count+= t.getTasks().size();
 		}
 		say("requeued " + count + " tasks in "+ Tasklists.size() + " lists");
@@ -24,6 +22,7 @@ public class Requeue extends CMD {
 	public static void requeue(){
 		for (String namespace : jedis.smembers("tdf.namespaces")) requeue(namespace);
 		for (TaskList t : Tasklists) {
+			t.save(jedis);
 			t.requeue();
 		}
 	}
