@@ -15,6 +15,8 @@ public class Requeue extends CMD {
 		requeue();
 		int count=0;
 		for (TaskList t : Tasklists) {
+			t.save(jedis);
+			t.requeue();
 			count+= t.getTasks().size();
 		}
 		say("requeued " + count + " tasks in "+ Tasklists.size() + " lists");
