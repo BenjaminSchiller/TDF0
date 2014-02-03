@@ -18,7 +18,7 @@ public class RedisTaskSet extends HashSet<Task> {
 	}
 
 	public RedisTaskSet() {
-		// TODO Auto-generated constructor stub
+		// TODO Auto-generated constructor stub 
 	}
 
 	public boolean save(Jedis jedis, String RedisKey, String namespace) {
@@ -43,7 +43,8 @@ public class RedisTaskSet extends HashSet<Task> {
 	}
 
 	public Task getany() {
-		return this.iterator().next();
+		Task[] ta = null;
+		return (this.size()==0?null:this.toArray(ta)[0]);
 	}
 
 }
