@@ -134,7 +134,9 @@ public class TaskInterfaceClient {
 		if (getTaskList() == null) return null;
 		Task t =getTaskList().getOpenTasks().getany();
 		try {
-			return new ClientTask(t);
+			ClientTask ct = new ClientTask(t);
+			jedis.smove("tdf."+ct.getNamespace()+".queuing", "tdf."+ct.getNamespace()+".running", ct.getIndex().toString());
+			return ct;
 		} catch (FileNotFoundException e) {
 			getTaskList().deltask(t);
 			
@@ -445,6 +447,7 @@ public class TaskInterfaceClient {
 	 * @return The task object with filled output, log and error fields
 	 */
 	public ClientTask runTask(ClientTask task) throws TaskException {
+		Logger.log(clientId+",Task_Start,"+task.getIndex());
 		if (!executeScript(task, "run.sh"))
 			throw new TaskException("run.sh did not return 0");
 		
