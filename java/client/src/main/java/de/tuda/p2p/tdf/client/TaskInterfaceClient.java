@@ -445,8 +445,10 @@ public class TaskInterfaceClient {
 	 * @return The task object with filled output, log and error fields
 	 */
 	public ClientTask runTask(ClientTask task) throws TaskException {
-		executeScript(task, "run.sh");
-
+		if (!executeScript(task, "run.sh"))
+			throw new TaskException("run.sh did not return 0");
+		
+		
 		ClientTask t = getTask(task.getNamespace(), task.getIndex());
 		if (t != null && t.getClient().equals(clientId)) {
 			Client.logMessage("Writing output, log and error from files to Redis.", true);
