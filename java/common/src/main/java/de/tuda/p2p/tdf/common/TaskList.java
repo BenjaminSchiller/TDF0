@@ -390,7 +390,7 @@ public class TaskList implements TaskLike {
 
 	public RedisTaskSet getOpenTasks() {
 		RedisTaskSet tasks = new RedisTaskSet(getTasks());
-		for (Task task : tasks) {
+		for (Task task : tasks.toArray(new Task[0])) {
 			task.load();
 			if (task.isFinished())
 				tasks.remove(task);
