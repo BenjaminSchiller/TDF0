@@ -135,7 +135,8 @@ public class TaskInterfaceClient {
 		Task t =getTaskList().getOpenTasks().getany();
 		try {
 			ClientTask ct = new ClientTask(t);
-			jedis.smove("tdf."+ct.getNamespace()+".queuing", "tdf."+ct.getNamespace()+".running", ct.getIndex().toString());
+			jedis.lrem("tdf."+ct.getNamespace()+".queuing", 1, ct.getIndex().toString());
+			jedis.sadd("tdf."+ct.getNamespace()+".running", ct.getIndex().toString());
 			return ct;
 		} catch (FileNotFoundException e) {
 			getTaskList().deltask(t);
