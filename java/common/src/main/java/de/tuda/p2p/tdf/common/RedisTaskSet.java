@@ -43,7 +43,7 @@ public class RedisTaskSet extends HashSet<Task> {
 	}
 
 	public Task getany() {
-		Task[] ta = null;
+		Task[] ta = new Task[0];
 		return (this.size()==0?null:this.toArray(ta)[0]);
 	}
 
