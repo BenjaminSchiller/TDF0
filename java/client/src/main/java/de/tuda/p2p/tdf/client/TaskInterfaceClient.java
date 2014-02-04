@@ -425,6 +425,7 @@ public class TaskInterfaceClient {
 				+ task.getIndex());
 		task.setError(errorMessage);
 		task.setFinished(DateTime.now());
+		
 
 		if (task.save(jedis) == -1L) {
 			Client.logError("Task '"
@@ -448,9 +449,9 @@ public class TaskInterfaceClient {
 	 * @return The task object with filled output, log and error fields
 	 */
 	public ClientTask runTask(ClientTask task) throws TaskException {
-		Logger.log(clientId+",Task_Start,"+task.getIndex());
+		Logger.log("Task_Start,"+clientId+","+task.getIndex());
 		if (!executeScript(task, "run.sh"))
-			throw new TaskException("run.sh did not return 0");
+			throw new TaskException("run.sh did not return 0\nhave this stderr:\n\n"+emergencyReadErrorFile(task));
 		
 		
 		ClientTask t = getTask(task.getNamespace(), task.getIndex());
@@ -476,6 +477,18 @@ public class TaskInterfaceClient {
 
 		return task;
 	}
+
+	private String emergencyReadErrorFile(ClientTask task) {
+		String s;
+		try {
+			s=readFile(task.getErrorFile());
+		} catch (TaskException e) {
+			s="failed to get stderr";
+		}
+		return s;
+	}
+
+
 
 	/**
 	 * Reads a file and return the content as a String
