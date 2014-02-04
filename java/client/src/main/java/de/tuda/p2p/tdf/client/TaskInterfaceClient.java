@@ -449,7 +449,7 @@ public class TaskInterfaceClient {
 	 * @return The task object with filled output, log and error fields
 	 */
 	public ClientTask runTask(ClientTask task) throws TaskException {
-		Logger.log("Task_Start,"+clientId+","+task.getIndex());
+		Logger.log("Task_Start,"+clientId+","+task.getNamespace()+"."+task.getIndex());
 		if (!executeScript(task, "run.sh"))
 			throw new TaskException("run.sh did not return 0\nhave this stderr:\n\n"+emergencyReadErrorFile(task));
 		
