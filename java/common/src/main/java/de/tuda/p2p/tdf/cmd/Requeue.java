@@ -69,6 +69,7 @@ public class Requeue extends CMD {
 				}
 			
 		}
+		say("tasks:"+tasks.size());
 		java.util.Collections.sort(tasks, new TaskComparator());
 		say("tasks:"+tasks.size());
 		int size = evenout?(int) Math.ceil(tasks.size()/(Math.ceil(tasks.size()/listsize))):listsize;
