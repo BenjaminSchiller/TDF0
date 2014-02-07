@@ -37,6 +37,15 @@ public class Requeue extends CMD {
 
 			@Override
 			public int compare(Task o1, Task o2) {
+				if (o1==null || o1.getRunBefore() == null){
+					if (o2==null){
+						return 0;
+					}else {
+						return -1;
+					}
+				}else if (o2==null){
+					return 1;
+				}else 
 				return o1.getRunBefore().compareTo(o2.getRunBefore());
 			}
 
