@@ -1,7 +1,10 @@
 package de.tuda.p2p.tdf.cmd;
 
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedList;
+import java.util.List;
 
 import de.tuda.p2p.tdf.common.Task;
 import de.tuda.p2p.tdf.common.TaskList;
@@ -28,46 +31,52 @@ public class Requeue extends CMD {
 	}
 	public static void requeue(String namespace) {
 		
-		// check the new set
-		for (String index : jedis.smembers("tdf." + namespace + ".new")) {
+		class TaskComparator implements Comparator<Task>{
 
-			Task task;
-			try {
-				task = new Task(jedis,namespace, Long.valueOf(index));
-			} catch ( FileNotFoundException e) {
-				break; // TODO Log
-			} 
-
-			if (task != null) {
-				requeue(task);
-				
-
-				
+			@Override
+			public int compare(Task o1, Task o2) {
+				return o1.getRunBefore().compareTo(o2.getRunBefore());
 			}
+
+
 		}
-		// check the running set
-		for (String index : jedis.smembers("tdf." + namespace + ".running")) {
-
-			Task task;
-			try {
-				task = new Task(jedis,namespace, Long.valueOf(index));
-			} catch ( FileNotFoundException e) {
-				break; // TODO Log
-			} 
-
-			if (task != null && task.isTimedOut()) {
-				requeue(task);
-				;
-
 				
-			}
+		boolean evenout = Settings.containsKey("evenout")?Settings.get("evenout").toUpperCase()=="TRUE":true;
+		int listsize= Settings.containsKey("listsize")?Integer.parseInt(Settings.get("listsize")):100;
+		
+		
+		List<Task> tasks = new ArrayList<>();
+		for (String index : jedis.smembers("tdf." + namespace + ".new")){
+			
+				try {
+					tasks.add(new Task(jedis, namespace, Long.getLong(index)));
+				} catch (FileNotFoundException e) {
+					break;
+				}
+			
 		}
+
+		for (String index : jedis.smembers("tdf." + namespace + ".running")){
+			
+				try {
+					Task task = new Task(jedis, namespace, Long.getLong(index));
+					if (task == null || !task.isTimedOut()) break;
+					tasks.add(task);
+				} catch (FileNotFoundException e) {
+					break;
+				}
+			
+		}
+		java.util.Collections.sort(tasks, new TaskComparator());
+		int size = evenout?(int) Math.ceil(tasks.size()/(Math.ceil(tasks.size()/listsize))):listsize;
+		for (Task task : tasks	) requeue(task,size);
 		
 		return ;
 	}
-	private static void requeue(Task task) {
+
+	private static void requeue(Task task, int desiredListSize) {
 		if (filter(task.getNamespace(),Tasklists).size() == 0 
-				|| filter(task.getNamespace(),Tasklists).getFirst().getTasks().size() > 100) 
+				|| filter(task.getNamespace(),Tasklists).getFirst().getTasks().size() > desiredListSize) 
 			Tasklists.push(new TaskList(jedis, task.getNamespace()));
 		filter(task.getNamespace(),Tasklists).getFirst().addtask(task);
 		
