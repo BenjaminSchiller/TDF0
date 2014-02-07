@@ -52,7 +52,7 @@ public class Requeue extends CMD {
 		LinkedList<Task> tasks = new LinkedList<>();
 		int fails=0;
 		for (String index : jedis.smembers("tdf." + namespace + ".new")){
-				say("tdf." + namespace + ".task." + Long.getLong(index));
+				say("tdf." + namespace + ".task." + '"'+index+'"');
 				try {
 					Task task=new Task(jedis, namespace, Long.getLong(index));
 					tasks.addFirst(task);
