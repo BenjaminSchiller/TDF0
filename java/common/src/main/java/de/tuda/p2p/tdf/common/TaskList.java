@@ -114,6 +114,8 @@ public class TaskList implements TaskLike {
 			return null;
 		}
 		if (!(jedis.exists(HashKey(namespace, index))||jedis.exists(SetKey(namespace, index)))) throw new FileNotFoundException("tasklist not found");
+		setNamespace(namespace);
+		setIndex(index);
 		tasks.load(jedis, namespace, SetKey(namespace, index));
 		defaults.load(jedis, HashKey(namespace, index));
 		// load defaults

@@ -121,15 +121,16 @@ public class TaskInterfaceClient {
 	 */
 	public ClientTask getTaskToExecute(Integer waitQueueExpired) throws InterruptedException {
 		//just to be sure... (we shuffle this later and don't want this to interfere with other functions)
-		List<String> namespaces=new ArrayList<String>(this.namespaces);
+		
 		if (namespaces == null || namespaces.isEmpty()) {
 			// execute tasks from all namespaces
 			Client.logMessage("Execute tasks from all namespaces", true);
 			namespaces = new ArrayList<String>(getJedis().smembers("tdf.namespaces"));
 		}
+		List<String> namespaces=new ArrayList<String>(this.namespaces);
 		if (getTaskList() == null || getTaskList().getOpenTasks().isEmpty()){
-			Collections.shuffle(this.namespaces);
-		for (String namespace : this.namespaces) {
+			Collections.shuffle(namespaces);
+		for (String namespace : namespaces) {
 			if (getTaskList() == null || getTaskList().getOpenTasks().isEmpty()) {
 				setTaskList(getTaskListToExecute(namespace, waitQueueExpired));
 			}else break;
