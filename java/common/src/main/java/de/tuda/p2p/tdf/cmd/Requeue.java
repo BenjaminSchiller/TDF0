@@ -44,6 +44,8 @@ public class Requeue extends CMD {
 		boolean evenout = Settings.containsKey("evenout")?Settings.get("evenout").toUpperCase()=="TRUE":true;
 		int listsize= Settings.containsKey("listsize")?Integer.parseInt(Settings.get("listsize")):100;
 		
+		say("evenout:"+evenout);
+		say("listsize:"+listsize);
 		
 		List<Task> tasks = new ArrayList<>();
 		for (String index : jedis.smembers("tdf." + namespace + ".new")){
