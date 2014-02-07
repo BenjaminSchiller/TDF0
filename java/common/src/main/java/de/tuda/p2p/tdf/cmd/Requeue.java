@@ -52,7 +52,7 @@ public class Requeue extends CMD {
 
 		}
 				
-		boolean evenout = Settings.containsKey("evenout")?Settings.get("evenout").toUpperCase()=="TRUE":true;
+		boolean evenout = Settings.containsKey("evenout")?Settings.get("evenout").toUpperCase().equals("TRUE"):true;
 		int listsize= Settings.containsKey("listsize")?Integer.parseInt(Settings.get("listsize")):100;
 		
 		say("evenout:"+evenout);
