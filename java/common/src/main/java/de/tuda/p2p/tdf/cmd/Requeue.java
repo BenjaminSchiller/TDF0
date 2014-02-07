@@ -96,7 +96,7 @@ public class Requeue extends CMD {
 	private static void requeue(Task task, int desiredListSize) {
 		if (filter(task.getNamespace(),Tasklists).size() == 0 
 				|| filter(task.getNamespace(),Tasklists).getFirst().getTasks().size() >= desiredListSize) 
-			Tasklists.push(new TaskList(jedis, task.getNamespace()));
+			Tasklists.addFirst(new TaskList(jedis, task.getNamespace()));
 		filter(task.getNamespace(),Tasklists).getFirst().addtask(task);
 		
 	}
