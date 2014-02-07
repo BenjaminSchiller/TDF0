@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -119,18 +120,21 @@ public class TaskInterfaceClient {
 	 *             task to be valid
 	 */
 	public ClientTask getTaskToExecute(Integer waitQueueExpired) throws InterruptedException {
-				if (namespaces == null || namespaces.isEmpty()) {
+		//just to be sure... (we shuffle this later and don't want this to interfere with other functions)
+		List<String> namespaces=new ArrayList<String>(this.namespaces);
+		if (namespaces == null || namespaces.isEmpty()) {
 			// execute tasks from all namespaces
 			Client.logMessage("Execute tasks from all namespaces", true);
 			namespaces = new ArrayList<String>(getJedis().smembers("tdf.namespaces"));
 		}
-		if (getTaskList() == null || getTaskList().getOpenTasks().isEmpty())
+		if (getTaskList() == null || getTaskList().getOpenTasks().isEmpty()){
+			Collections.shuffle(this.namespaces);
 		for (String namespace : this.namespaces) {
 			if (getTaskList() == null || getTaskList().getOpenTasks().isEmpty()) {
 				setTaskList(getTaskListToExecute(namespace, waitQueueExpired));
 			}else break;
 
-		}
+		}}
 		if (getTaskList() == null) return null;
 		Task t =getTaskList().getOpenTasks().getany();
 		try {

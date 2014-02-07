@@ -55,18 +55,13 @@ public class Requeue extends CMD {
 		boolean evenout = Settings.containsKey("evenout")?Settings.get("evenout").toUpperCase().equals("TRUE"):true;
 		int listsize= Settings.containsKey("listsize")?Integer.parseInt(Settings.get("listsize")):100;
 		
-		say("evenout:"+evenout);
-		say("listsize:"+listsize);
-		
 		LinkedList<Task> tasks = new LinkedList<>();
-		int fails=0;
 		for (String index : jedis.smembers("tdf." + namespace + ".new")){
 				say("tdf." + namespace + ".task." + '"'+index+'"');
 				try {
 					Task task=new Task(jedis, namespace, Long.parseLong(index));
 					tasks.addFirst(task);
 				} catch (FileNotFoundException e) {
-					fails++;
 					
 				}
 			
@@ -79,14 +74,10 @@ public class Requeue extends CMD {
 					if (task == null || !task.isTimedOut()) break;
 					tasks.addFirst(task);
 				} catch (FileNotFoundException e) {
-					fails++;
-}
+				}
 			
 		}
-		say("fails:"+fails);
-		say("tasks:"+tasks.size());
 		java.util.Collections.sort(tasks, new TaskComparator());
-		say("tasks:"+tasks.size());
 		int size = evenout?(int) Math.floor(tasks.size()/(Math.ceil(((double)tasks.size())/listsize))):listsize;
 		for (Task task : tasks	) requeue(task,size);
 		
