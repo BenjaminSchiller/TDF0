@@ -52,7 +52,8 @@ public class Requeue extends CMD {
 		for (String index : jedis.smembers("tdf." + namespace + ".new")){
 			
 				try {
-					tasks.add(new Task(jedis, namespace, Long.getLong(index)));
+					Task task=new Task(jedis, namespace, Long.getLong(index));
+					int b =(tasks.add(task))?0:fails++;
 				} catch (FileNotFoundException e) {
 					fails++;
 					break;
@@ -65,7 +66,7 @@ public class Requeue extends CMD {
 				try {
 					Task task = new Task(jedis, namespace, Long.getLong(index));
 					if (task == null || !task.isTimedOut()) break;
-					tasks.add(task);
+					int b =(tasks.add(task))?0:fails++;
 				} catch (FileNotFoundException e) {
 					fails++;
 					break;
