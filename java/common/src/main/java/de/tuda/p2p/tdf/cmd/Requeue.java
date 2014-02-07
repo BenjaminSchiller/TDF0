@@ -48,11 +48,13 @@ public class Requeue extends CMD {
 		say("listsize:"+listsize);
 		
 		List<Task> tasks = new LinkedList<>();
+		int fails=0;
 		for (String index : jedis.smembers("tdf." + namespace + ".new")){
 			
 				try {
 					tasks.add(new Task(jedis, namespace, Long.getLong(index)));
 				} catch (FileNotFoundException e) {
+					fails++;
 					break;
 				}
 			
@@ -65,10 +67,12 @@ public class Requeue extends CMD {
 					if (task == null || !task.isTimedOut()) break;
 					tasks.add(task);
 				} catch (FileNotFoundException e) {
+					fails++;
 					break;
 				}
 			
 		}
+		say("fails:"+fails);
 		say("tasks:"+tasks.size());
 		java.util.Collections.sort(tasks, new TaskComparator());
 		say("tasks:"+tasks.size());
