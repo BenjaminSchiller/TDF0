@@ -47,7 +47,7 @@ public class Requeue extends CMD {
 		say("evenout:"+evenout);
 		say("listsize:"+listsize);
 		
-		List<Task> tasks = new ArrayList<>();
+		List<Task> tasks = new LinkedList<>();
 		for (String index : jedis.smembers("tdf." + namespace + ".new")){
 			
 				try {
