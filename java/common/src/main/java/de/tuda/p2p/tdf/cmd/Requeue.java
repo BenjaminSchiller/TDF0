@@ -6,6 +6,8 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.sun.xml.internal.ws.api.pipe.NextAction;
+
 import de.tuda.p2p.tdf.common.Task;
 import de.tuda.p2p.tdf.common.TaskList;
 
@@ -56,7 +58,7 @@ public class Requeue extends CMD {
 					tasks.addFirst(task);
 				} catch (FileNotFoundException e) {
 					fails++;
-					break;
+					
 				}
 			
 		}
@@ -69,8 +71,7 @@ public class Requeue extends CMD {
 					tasks.addFirst(task);
 				} catch (FileNotFoundException e) {
 					fails++;
-					break;
-				}
+}
 			
 		}
 		say("fails:"+fails);
