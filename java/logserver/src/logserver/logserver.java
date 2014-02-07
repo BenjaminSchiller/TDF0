@@ -41,10 +41,9 @@ public class logserver {
 	    while(true){
 	    	try {
 				Socket Connection = MyService.accept();
-				Calendar date = Calendar.getInstance();
 		        BufferedReader is = new BufferedReader(new InputStreamReader(Connection.getInputStream()));
 		        PrintStream os = new PrintStream(Connection.getOutputStream());
-				log("("+(date.getTimeInMillis()/1000)+ Connection.getInetAddress().toString()+")"+(is.readLine()));
+				log("("+(Calendar.getInstance().getTimeInMillis())+ Connection.getInetAddress().toString()+")"+(is.readLine()));
 				Connection.close();os.close();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
