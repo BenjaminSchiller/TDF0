@@ -8,7 +8,7 @@ r=[]
 array.each do |pattern|
 
 	if pattern == "logs"
-		r<<"../../fakelogs/fake.log" 
+		r+=@config[:logfiles] 
 	else
 		r+=Dir[pattern.gsub(/%./,"*")].select{|i|
 			Time.now.to_i-Time.strptime(i,pattern).to_i < interval rescue nil
@@ -27,11 +27,11 @@ end
 
 Timestamp=Time.now
 
-config=JSON.load(input,nil,{:symbolize_names => true})
+@config=JSON.load(input,nil,{:symbolize_names => true})
 
-config[:modules].map{|i| i.to_sym}.each do |mod|
+@config[:modules].map{|i| i.to_sym}.each do |mod|
 
-definition=config[:definitions][mod]
+definition=@config[:definitions][mod]
 
 
 trigger = Dir[definition[:output].gsub(/%./,"*")].select{|i|

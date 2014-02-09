@@ -7,7 +7,7 @@ cat $1 > $tmpfile
 
 delim=","
 
-cut -d"$delim" -f2 $tmpfile | uniq | while read host ; do
+cut -d"$delim" -f3 $tmpfile | uniq | while read host ; do
 echo -n "$host "
 grep $host$delim $tmpfile | grep -ic Task_Claim | tr -d "\n"
 echo -n " "
