@@ -20,3 +20,15 @@ for action in $actions; do
  echo -e $manifestheader de.tuda.p2p.tdf.cmd.$action > $manifestfile
  jar cfm $srcdir/$action.jar $manifestfile *
 done
+
+rm -r $tmpdir/de/tuda/p2p/tdf/cmd
+cp -r $srcdir/client/bin/de $tmpdir
+
+echo -e $manifestheader de.tuda.p2p.tdf.cmd.Client > $manifes
+tfile
+jar cfm $srcdir/client.jar $manifestfile *
+
+cd $srcdir/logserver/bin/
+echo -e $manifestheader logserver.logserver > $manifestfile
+jar cfm $srcdir/logserver.jar $manifestfile *
+
