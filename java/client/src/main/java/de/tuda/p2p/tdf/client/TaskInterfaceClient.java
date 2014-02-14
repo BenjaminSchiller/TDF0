@@ -267,10 +267,11 @@ public class TaskInterfaceClient {
 			Client.logMessage("Waiting for the task '" + index + "' to get valid...");
 			Thread.sleep(tasklist.validWaitTime());
 		}
-		
-		Logger.debug("Claim_Tasklist,"+clientId+","+tasklist.getNamespace()+"."+tasklist.getIndex());
+		String Tasks ="";
 		for (Task task : tasklist.getTasks())
-			Logger.debug("Claim_Task,"+clientId+","+task.getNamespace()+"."+task.getIndex());
+			Tasks+=","+task.getNamespace()+"."+task.getIndex();
+		Logger.debug("Claim_Tasklist,"+clientId+","+tasklist.getNamespace()+"."+tasklist.getIndex()+Tasks);
+		
 		
 		return tasklist;
 	}
