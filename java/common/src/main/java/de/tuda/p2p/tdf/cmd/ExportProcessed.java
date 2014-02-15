@@ -22,7 +22,7 @@ public class ExportProcessed extends CMD{
 		return sb.toString();
 	}
 	public static String exportProcessed(String Namespace){
-		StringBuilder sb = new StringBuilder("{\n\"name\": \""+Namespace+"\"");
+		StringBuilder sb = new StringBuilder("{\n\"name\": \""+Namespace+"\",\n");
 		for (Task t : (new Namespace(jedis, Namespace)).getProcessed())
 			sb.append(t.getIndex()+"\": \""+t.toString()+"\",\n");
 		if(sb.lastIndexOf(",")>0) sb.deleteCharAt(sb.lastIndexOf(","));
