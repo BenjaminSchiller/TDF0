@@ -17,7 +17,7 @@ public class ExportProcessed extends CMD{
 		StringBuilder sb = new StringBuilder("[\n");
 		for (String namespace : jedis.smembers("tdf.namespaces"))
 			sb.append(exportProcessed(namespace)+",");
-		sb.deleteCharAt(sb.lastIndexOf(","));
+		if(sb.lastIndexOf(",")>0) sb.deleteCharAt(sb.lastIndexOf(","));
 		sb.append("]\n");
 		return sb.toString();
 	}
@@ -25,7 +25,7 @@ public class ExportProcessed extends CMD{
 		StringBuilder sb = new StringBuilder("[\n");
 		for (Task t : (new Namespace(jedis, Namespace)).getProcessed())
 			sb.append(t.toString()+",\n");
-		sb.deleteCharAt(sb.lastIndexOf(","));
+		if(sb.lastIndexOf(",")>0) sb.deleteCharAt(sb.lastIndexOf(","));
 		sb.append("]\n");
 		return sb.toString();
 	}
