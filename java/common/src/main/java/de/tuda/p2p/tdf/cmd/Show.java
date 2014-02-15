@@ -3,6 +3,7 @@ package de.tuda.p2p.tdf.cmd;
 import java.io.FileNotFoundException;
 
 import argo.jdom.JsonNode;
+import de.tuda.p2p.tdf.common.Namespace;
 import de.tuda.p2p.tdf.common.Task;
 import de.tuda.p2p.tdf.common.TaskList;
 
@@ -24,8 +25,14 @@ public class Show extends CMD {
 
 	private static void show(String identifier) {
 		String namespace=identifier.split("\\.")[1];
-		String index=identifier.split("\\.")[3];
-		String type = identifier.split("\\.")[2];
+		String type,index;
+		if(identifier.split("\\.").length==2){
+			type="namespace";
+			index="0";
+		}else{
+			index=identifier.split("\\.")[3];
+			type = identifier.split("\\.")[2];
+		}
 		
 		switch(type){
 		case "task":
@@ -43,6 +50,9 @@ public class Show extends CMD {
 				// TODO Auto-generated catch block
 				say(e.getMessage());
 			}
+			break;
+		case "namespace":
+			say(new Namespace(jedis,namespace).asString());
 			break;
 		}
 		
