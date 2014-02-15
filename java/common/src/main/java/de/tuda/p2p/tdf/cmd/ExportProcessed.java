@@ -16,14 +16,16 @@ public class ExportProcessed extends CMD{
 	public static String exportProcessed(){
 		StringBuilder sb = new StringBuilder("[\n");
 		for (String namespace : jedis.smembers("tdf.namespaces"))
-			sb.append(exportProcessed(namespace));
+			sb.append(exportProcessed(namespace)+",");
+		sb.deleteCharAt(sb.lastIndexOf(","));
 		sb.append("]\n");
 		return sb.toString();
 	}
 	public static String exportProcessed(String Namespace){
 		StringBuilder sb = new StringBuilder("[\n");
 		for (Task t : (new Namespace(jedis, Namespace)).getProcessed())
-			sb.append(t.toString()+"\n");
+			sb.append(t.toString()+",\n");
+		sb.deleteCharAt(sb.lastIndexOf(","));
 		sb.append("]\n");
 		return sb.toString();
 	}
