@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import argo.jdom.JsonNode;
+import argo.jdom.JsonNodeBuilder;
+import argo.jdom.JsonNodeBuilders;
+import argo.jdom.JsonStringNode;
 
 public class DeleteNamespace extends CMD {
 	
@@ -39,9 +42,16 @@ public class DeleteNamespace extends CMD {
 	
 	
 	private static void delete(JsonNode jn) {
-		for (JsonNode cn : jn.getElements()){
-			deleteNamespace(cn.getText());
-		}
+		if (jn.hasElements()) {
+			for (JsonNode cn : jn.getElements()) {
+				delete(cn);
+			}
+		} else if (jn.hasFields()) {
+			JsonStringNode jsn = JsonNodeBuilders.aStringBuilder("name")
+					.build();
+			delete(jn.getFields().get(jsn));
+		} else if (jn.hasText())
+			deleteNamespace(jn.getText());
 	}
 
 }
