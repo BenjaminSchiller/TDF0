@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import argo.jdom.JsonNode;
-import argo.jdom.JsonNodeBuilder;
 import argo.jdom.JsonNodeBuilders;
 import argo.jdom.JsonStringNode;
 
 public class DeleteNamespace extends CMD {
 	
 	public static void main(String[] args){
+		init();
 		delete(parsejson(getInput(args)));
 	}
 
@@ -25,15 +25,13 @@ public class DeleteNamespace extends CMD {
 		
 		// keys to be deleted from database, they are going to be prefixed with
 		// '"tdf." + namespace + "."'
-		List<String> keys = new ArrayList<>();
+		List<String> keys = new ArrayList<String>();
 		keys.add("tdf." + namespace + "."+"queuing");
 		keys.add("tdf." + namespace + "."+"running");
 		keys.add("tdf." + namespace + "."+"completed");
 		keys.add("tdf." + namespace + "."+"processed");
 		keys.add("tdf." + namespace + "."+"index");
 		keys.add("tdf." + namespace + "."+"new");
-		keys.addAll(jedis.keys("tdf." + namespace + ".task.*"));
-		keys.addAll(jedis.keys("tdf." + namespace + ".tasklist.*"));
 		jedis.del(keys.toArray(new String[0]));
 		
 		jedis.srem("tdf.namespaces",namespace);
