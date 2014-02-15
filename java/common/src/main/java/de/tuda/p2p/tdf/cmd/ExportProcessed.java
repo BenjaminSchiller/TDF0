@@ -22,11 +22,11 @@ public class ExportProcessed extends CMD{
 		return sb.toString();
 	}
 	public static String exportProcessed(String Namespace){
-		StringBuilder sb = new StringBuilder("[\n");
+		StringBuilder sb = new StringBuilder("{\n\"name\": \""+Namespace+"\"");
 		for (Task t : (new Namespace(jedis, Namespace)).getProcessed())
-			sb.append(t.toString()+",\n");
+			sb.append(t.getIndex()+"\": \""+t.toString()+"\",\n");
 		if(sb.lastIndexOf(",")>0) sb.deleteCharAt(sb.lastIndexOf(","));
-		sb.append("]");
+		sb.append("}");
 		return sb.toString();
 	}
 }
