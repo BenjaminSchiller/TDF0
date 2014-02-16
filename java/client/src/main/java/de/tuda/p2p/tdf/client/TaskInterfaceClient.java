@@ -129,7 +129,7 @@ public class TaskInterfaceClient {
 		}
 		List<String> namespaces=new ArrayList<String>(this.namespaces);
 		if (getTaskList() == null || getTaskList().getOpenTasks().isEmpty()){
-			Collections.shuffle(namespaces);
+//			Collections.shuffle(namespaces);
 		for (String namespace : namespaces) {
 			if (getTaskList() == null || getTaskList().getOpenTasks().isEmpty()) {
 				setTaskList(getTaskListToExecute(namespace, waitQueueExpired));
