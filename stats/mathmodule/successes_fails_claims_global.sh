@@ -3,7 +3,7 @@ source `dirname $0`/uniq.sh
 
 tmpfile=`mktemp`
 outfile=`basename ${0} .sh`.`date +%s`
-cat $1 > $tmpfile
+cat "$@" > $tmpfile
 
 delim=" "
 

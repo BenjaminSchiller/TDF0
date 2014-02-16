@@ -27,7 +27,7 @@ done
 rm -r $tmpdir/de/tuda/p2p/tdf/cmd
 cp -r $srcdir/client/bin/de $tmpdir
 
-echo -e $manifestheader de.tuda.p2p.tdf.cmd.Client > $manifestfile
+echo -e $manifestheader de.tuda.p2p.tdf.client.Client > $manifestfile
 jar cfm $targetdir/client.jar $manifestfile *
 
 cd $srcdir/logserver/bin/

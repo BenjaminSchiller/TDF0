@@ -11,7 +11,7 @@ done
 
 tmpfile=`mktemp`
 
-cat $1 > $tmpfile
+cat "$@" > $tmpfile
 
 n=`head -n2 $tmpfile | tail -n1 | wc -w | cut -d "	" -f2`
 #set output \"test.svg\"
@@ -25,7 +25,7 @@ set style histogram
 set style fill solid border -1
 set boxwidth 0.75
 set key outside;
-plot [-1:] \"$tmpfile\" using 4:xticlabels(1) notitle"
+plot [-1:] [0:] \"$tmpfile\" using 4:xticlabels(1) notitle"
 echo
 ) | gnuplot
 rm $tmpfile

@@ -26,7 +26,7 @@ fi
 
 
 
-cat $1 > $tmpfile
+cat "$@" > $tmpfile
 
 (echo 'set term svg size 600,600
 
