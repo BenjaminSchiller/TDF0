@@ -212,7 +212,12 @@ public class TaskInterfaceServer {
 			return null;
 		}
 
-		return new Task(jedis, namespace, index);
+		try {
+			return new Task(jedis, namespace, index);
+		}
+		catch(Exception e) {
+			return null;
+		}
 	}
 
 	/**
@@ -227,7 +232,13 @@ public class TaskInterfaceServer {
 
 		for (String index : jedis
 				.lrange("tdf." + namespace + ".queuing", 0, -1)) {
-			tasks.add(new Task(jedis, namespace, Long.valueOf(index)));
+			try {
+				tasks.add(new Task(jedis, namespace, Long.valueOf(index)));
+			}
+			catch(Exception e) {
+				return null;
+			}
+
 		}
 
 		return tasks;
@@ -309,7 +320,14 @@ public class TaskInterfaceServer {
 		Set<Task> tasks = new HashSet<Task>();
 
 		for (String index : jedis.smembers("tdf." + namespace + ".running")) {
-			tasks.add(new Task(jedis, namespace, Long.valueOf(index)));
+
+			try {
+				tasks.add(new Task(jedis, namespace, Long.valueOf(index)));
+			}
+			catch(Exception e) {
+				return null;
+			}
+
 		}
 
 		return tasks;
@@ -353,7 +371,14 @@ public class TaskInterfaceServer {
 		Set<Task> tasks = new HashSet<Task>();
 
 		for (String index : jedis.smembers("tdf." + namespace + ".completed")) {
-			tasks.add(new Task(jedis, namespace, Long.valueOf(index)));
+
+			try {
+				tasks.add(new Task(jedis, namespace, Long.valueOf(index)));
+			}
+			catch(Exception e) {
+				return null;
+			}
+
 		}
 
 		return tasks;
@@ -397,7 +422,14 @@ public class TaskInterfaceServer {
 		Set<ClientTask> tasks = new HashSet<ClientTask>();
 
 		for (String index : jedis.smembers("tdf." + namespace + ".processed")) {
-			tasks.add(new ClientTask(jedis, namespace, Long.valueOf(index)));
+
+			try {
+				tasks.add(new ClientTask(jedis, namespace, Long.valueOf(index)));
+			}
+			catch(Exception e) {
+				return null;
+			}
+
 		}
 
 		return tasks;

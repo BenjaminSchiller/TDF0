@@ -6,7 +6,7 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.sun.xml.internal.ws.api.pipe.NextAction;
+//import com.sun.xml.internal.ws.api.pipe.NextAction;
 
 import de.tuda.p2p.tdf.common.Task;
 import de.tuda.p2p.tdf.common.TaskList;
@@ -55,7 +55,7 @@ public class Requeue extends CMD {
 		boolean evenout = Settings.containsKey("evenout")?Settings.get("evenout").toUpperCase().equals("TRUE"):true;
 		int listsize= Settings.containsKey("listsize")?Integer.parseInt(Settings.get("listsize")):100;
 		
-		LinkedList<Task> tasks = new LinkedList<>();
+		LinkedList<Task> tasks = new LinkedList<Task>();
 		for (String index : jedis.smembers("tdf." + namespace + ".new")){
 				say("tdf." + namespace + ".task." + '"'+index+'"');
 				try {

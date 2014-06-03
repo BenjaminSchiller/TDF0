@@ -20,7 +20,7 @@ import argo.saj.InvalidSyntaxException;
 public abstract class CMD {
 
 	protected static Jedis jedis;
-	protected static Map<String,String> Settings =new HashMap<>(); 
+	protected static Map<String,String> Settings =new HashMap<String,String>(); 
 	
 	public static void init() {
 		jedis = new Jedis("localhost");

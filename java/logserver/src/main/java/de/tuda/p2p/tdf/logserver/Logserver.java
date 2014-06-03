@@ -1,4 +1,4 @@
-package logserver;
+package de.tuda.p2p.tdf.logserver;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -11,8 +11,13 @@ import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-public class logserver {
+public class Logserver {
 	
+	/**
+	 * 
+	 * @param s
+	 * @throws IOException
+	 */
 	private static void log(String s) throws IOException{
 		FileWriter fw = new FileWriter(new File(getlogname()),true);
 		fw.write(s+System.lineSeparator());
@@ -20,11 +25,19 @@ public class logserver {
 		
 	}
 
+	/**
+	 * 
+	 * @return
+	 */
 	private static String getlogname() {
 		// TODO Auto-generated method stub
 		return "Log"+new SimpleDateFormat("yyyyMMdd-HH").format(Calendar.getInstance().getTime())+".log";
 	}
 
+	/**
+	 * 
+	 * @param args
+	 */
 	@SuppressWarnings("resource")
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
