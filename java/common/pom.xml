@@ -148,6 +148,10 @@
 					    <src>${basedir}/target/commands.sh</src>
 					</link>
 					<link>
+					    <dst>${basedir}/target/AddTaskList</dst>
+					    <src>${basedir}/target/commands.sh</src>
+					</link>
+					<link>
 					    <dst>${basedir}/target/DeleteNamespace</dst>
 					    <src>${basedir}/target/commands.sh</src>
 					</link>
