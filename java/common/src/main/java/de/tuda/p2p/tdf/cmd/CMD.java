@@ -41,9 +41,11 @@ public abstract class CMD {
 			else
 				jedis = new Jedis(Settings.get("hostname"));
 		}
-		// if (Settings.containsKey("user"))
-		// if (Settings.containsKey("password"))
-		// if (Settings.containsKey("loglevel"))
+                if (Settings.containsKey("password"))
+                        jedis.auth(Settings.get("password"));
+                if (Settings.containsKey("index"))
+                        jedis.select(Integer.valueOf(Settings.get("index")));
+                // if (Settings.containsKey("loglevel"))
 
 	}
 	
