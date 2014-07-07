@@ -20,7 +20,7 @@ then
 	exit 1
 fi
 
-export TARGET=$1
+export TARGET=${1%/}
 
 mkdir $TARGET/commands
 
@@ -30,7 +30,7 @@ chmod 755 $TARGET/commands/commands.sh
 
 for command in AddNamespace AddTask AddTaskList DeleteNamespace DeleteTaskList ExportProcessed Requeue Show
 do
-	ln -s $TARGET/commands/commands.sh $TARGET/commands/${command}
+	ln -s $(realpath $TARGET/commands/commands.sh) $TARGET/commands/${command}
 done
 
 for ((clientnum=0; clientnum<$2; clientnum++))
