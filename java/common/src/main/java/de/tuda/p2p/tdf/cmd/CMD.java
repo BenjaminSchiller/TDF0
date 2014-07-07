@@ -7,6 +7,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.net.URISyntaxException;
+import java.security.CodeSource;
+import java.util.Properties;
+import java.io.FileInputStream;
+
+
+import javax.naming.ConfigurationException;
 
 import org.apache.commons.io.IOUtils;
 
@@ -23,30 +30,74 @@ public abstract class CMD {
 	protected static Map<String,String> Settings =new HashMap<String,String>(); 
 	
 	public static void init() {
-		jedis = new Jedis("localhost");
-		JsonNode jn = null;
-		try {
-			jn = parsejson(IOUtils.toString(new FileReader("settings")));
-		} catch (IOException e) {
-			err("Config file: " + e.getMessage());
-			System.exit(29);
-			;
-		}
-		for (JsonField jf : jn.getFieldList())
-			Settings.put(jf.getName().getText(), jf.getValue().getText());
-		if (Settings.containsKey("hostname")) {
-			if (Settings.containsKey("port"))
-				jedis = new Jedis(Settings.get("hostname"),
-						Integer.valueOf(Settings.get("port")));
-			else
-				jedis = new Jedis(Settings.get("hostname"));
-		}
-                if (Settings.containsKey("password"))
-                        jedis.auth(Settings.get("password"));
-                if (Settings.containsKey("index"))
-                        jedis.select(Integer.valueOf(Settings.get("index")));
-                // if (Settings.containsKey("loglevel"))
 
+		try {
+             jedis = loadConfig();
+        }
+        catch (FileNotFoundException e) {
+			System.out.println("Could not find config file 'cmd.properties'.");
+			System.exit(29);
+		} catch (URISyntaxException e) {
+			System.out.println("Error while loading config file.");
+			System.exit(29);
+		} catch (IOException e) {
+			System.out.println("Error while reading config file.");
+			System.exit(29);
+		} catch (ConfigurationException e) {
+			System.out.println(e.getMessage());
+			System.exit(29);
+		} /*catch (JedisConnectionException e) {
+			System.out.println("Error while connecting to Redis: " + e.getMessage());
+		} catch (JedisDataException e) {
+			System.out.println("Redis error: " + e.getMessage());
+		}*/
+
+	}
+	
+	/**
+	 * Loads the configuration from a 'client.properties' file
+	 *
+	 * @throws URISyntaxException
+	 *             Thrown if the path to the configuration file is not correct
+	 * @throws FileNotFoundException
+	 *             Thrown if the configuration file cannot be found
+	 * @throws IOException
+	 *             Thrown if there was an error while loading the configuration
+	 *             file
+	 * @throws ConfigurationException
+	 *             Thrown if information in the configuration file is missing or
+	 *             can not be parsed
+	 */
+	private static Jedis loadConfig() throws URISyntaxException,
+			FileNotFoundException, IOException, ConfigurationException {
+
+		File configFile = new File("./", "cmd.properties");
+
+		Properties config = new Properties();
+		System.out.println("Use config file: " + configFile.getCanonicalPath());
+		config.load(new FileInputStream(configFile));
+		
+		String hostname = config.getProperty("redis.host");
+		if(hostname == null)
+			hostname = "localhost";
+		
+		String port = config.getProperty("redis.port");
+		if(port == null)
+			port = "6379";
+		
+		Jedis jedis = new Jedis(hostname, Integer.valueOf(port));
+		
+		String index = config.getProperty("redis.index");
+		if(index == null)
+			index = "0";
+		
+		jedis.select(Integer.valueOf(index));
+		
+		String password = config.getProperty("redis.auth");
+		if(password != null && !password.isEmpty())
+			jedis.auth(password);
+						
+		return jedis;
 	}
 	
 	private static void err(String string) {
