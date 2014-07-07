@@ -44,6 +44,9 @@ public class AddTask extends CMD{
 		if (t.getNamespace() == null || t.getNamespace().isEmpty()) return t.getIndex().toString()+": no namespace given, not added";
 		t.save(jedis);
 		jedis.sadd("tdf."+t.getNamespace()+".new",t.getIndex().toString());
+		System.out.println("fooRequeueing");
+		Requeue.requeue();
+		//t.requeue(jedis);
 		return t.getIndex().toString();
 	}
 	
