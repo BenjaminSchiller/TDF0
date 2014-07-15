@@ -44,7 +44,7 @@ public class Logserver {
 
 	    ServerSocket MyService = null;
 	    try {
-	       MyService = new ServerSocket(1337);
+	       MyService = new ServerSocket(23706);
 	        }
 	        catch (IOException e) {
 	           System.out.println(e);

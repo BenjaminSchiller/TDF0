@@ -11,7 +11,7 @@ public class Logger {
 	
 	public static void log(String s){
 		try {
-			Socket Connection = new Socket("localhost", 1337);
+			Socket Connection = new Socket("localhost", 23706);
 			Calendar date = Calendar.getInstance();
 	        BufferedReader is = new BufferedReader(new InputStreamReader(Connection.getInputStream()));
 	        PrintStream os = new PrintStream(Connection.getOutputStream());
