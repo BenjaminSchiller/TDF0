@@ -477,6 +477,7 @@ public class TaskList implements TaskLike {
 	}
 
 	public void requeue() {
+		System.out.println("Requeueing");
 		// remove task from the running set
 		jedis.srem("tdf." + getNamespace() + ".running", getIndex().toString());
 

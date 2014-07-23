@@ -2,7 +2,7 @@
 
 import redis
 import os
-import urllib.parse
+import urlparse
 
 from Task import Task
 from TaskError import TaskError

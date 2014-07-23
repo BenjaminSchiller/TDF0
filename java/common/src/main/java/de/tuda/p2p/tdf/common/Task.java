@@ -110,9 +110,16 @@ public class Task implements TaskLike {
 	 * @throws FileNotFoundException 
 	 */
 	public Task(Jedis jedis, String namespace, Long index) throws FileNotFoundException {
-		if (!jedis.exists(HashKey(namespace, index))) 
+		System.out.println("Gnu3.6");
+		if (!jedis.exists(HashKey(namespace, index)))
+		{
+			System.out.println("Gnu3.7");
 			throw new FileNotFoundException("task not found");
+			
+		}
+		System.out.println("Gnu3.8");
 		load(jedis,namespace,index);
+		System.out.println("Gnu3.9");
 	}
 
 	private void load(Jedis jedis, String namespace, Long index) {
@@ -801,12 +808,14 @@ public class Task implements TaskLike {
 	}
 	
 	public void requeue(Jedis jedis) {
+		System.out.println("Requeueing");
 		jedis.srem("tdf." + getNamespace() + ".running", getIndex().toString());
 		jedis.srem("tdf." + getNamespace() + ".new", getIndex().toString());
 
 		// remove client and started information
 		jedis.hdel(HashKey(getNamespace(), getIndex()), "started");
 		jedis.hdel(HashKey(getNamespace(), getIndex()), "client");
+		jedis.hdel(HashKey(getNamespace(), getIndex()), "finished");
 
 		// add task to the front of the queuing list
 		jedis.lpush("tdf." + getNamespace() + ".queuing", getIndex().toString());

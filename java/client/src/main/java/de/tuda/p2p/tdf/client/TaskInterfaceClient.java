@@ -121,7 +121,7 @@ public class TaskInterfaceClient {
 	 */
 	public ClientTask getTaskToExecute(Integer waitQueueExpired) throws InterruptedException {
 		//just to be sure... (we shuffle this later and don't want this to interfere with other functions)
-		
+		Client.logMessage("Getting task...");
 		if (namespaces == null || namespaces.isEmpty()) {
 			// execute tasks from all namespaces
 			Client.logMessage("Execute tasks from all namespaces", true);
@@ -137,7 +137,11 @@ public class TaskInterfaceClient {
 
 		}}
 		if (getTaskList() == null) return null;
-		Task t =getTaskList().getOpenTasks().getany();
+		Task t = getTaskList().getOpenTasks().getany();
+		Client.logMessage("raberberbarbera");
+		if(t == null)
+			Client.logError("Task is empty!");
+		//Client.logMessage("Task" + t.asString());
 		try {
 			ClientTask ct = new ClientTask(t);
 			jedis.lrem("tdf."+ct.getNamespace()+".queuing", 1, ct.getIndex().toString());
@@ -145,7 +149,7 @@ public class TaskInterfaceClient {
 			return ct;
 		} catch (FileNotFoundException e) {
 			getTaskList().deltask(t);
-			
+			System.out.println("File not found: " + t.asString());
 			return null;
 		}
 		
@@ -234,45 +238,74 @@ public class TaskInterfaceClient {
 				Client.logMessage("Queuing list is empty", true);
 				return null;
 			}
+			Client.logMessage("Fetched Task-List");
 			tasklist = new TaskList();
+			Client.logMessage("2");
 			try {
 				tasklist .load(getJedis(), namespace, Long.valueOf(index));
+				Client.logMessage("3");
+
 			} catch ( FileNotFoundException e) {
+				Client.logMessage("4");
 				Client.logError("Tasklist '" + index + "' returned null.", true);
+				Client.logMessage("5");
 				return null;
 			}
 			if (tasklist.isExpired()) {
+				Client.logMessage("6");
+
 				Client.logMessage("Tasklist '" + index + "' is expired.", true);
+				Client.logMessage("7");
 
 				// add the expired task to the end of the queue, the server
 				// needs to delete them
-				getJedis().rpush("tdf." + namespace + ".queuing", index);				
+				getJedis().rpush("tdf." + namespace + ".queuing", index);	
+				Client.logMessage("8");
+
 
 				if (firstExpiredIndex == null) {
-					firstExpiredIndex = tasklist.getIndex();					
+					Client.logMessage("9");
+
+					firstExpiredIndex = tasklist.getIndex();
+					Client.logMessage("10");
+
+					
 				} else {
 					if (firstExpiredIndex == tasklist.getIndex()) {
+						Client.logMessage("11");
+
 						Client.logMessage("All tasks are expired, wait " + waitQueueExpired + "ms.", true);
 						Thread.sleep(waitQueueExpired);
 						firstExpiredIndex = null;
 					}
 				}
 			}
+			Client.logMessage("12");
+
 		} while (tasklist.isExpired());
+		Client.logMessage("13");
 
 		getJedis().sadd("tdf." + namespace + ".running", index);
+		Client.logMessage("14");
 
 		if ( ! tasklist.isValid()) {
 			// wait for the task to be valid
 			Client.logMessage("Waiting for the task '" + index + "' to get valid...");
 			Thread.sleep(tasklist.validWaitTime());
 		}
+		Client.logMessage("15");
+
 		String Tasks ="";
 		for (Task task : tasklist.getTasks())
 			Tasks+=","+task.getNamespace()+"."+task.getIndex();
+		Client.logMessage("16");
+
 		Logger.debug("Claim_Tasklist,"+clientId+","+tasklist.getNamespace()+"."+tasklist.getIndex()+Tasks);
 		
+		Client.logMessage("17");
 		
+		Client.logMessage("Tasklist: " + tasklist.toString());
+
 		return tasklist;
 	}
 
