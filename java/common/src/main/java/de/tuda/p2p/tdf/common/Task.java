@@ -110,16 +110,16 @@ public class Task implements TaskLike {
 	 * @throws FileNotFoundException 
 	 */
 	public Task(Jedis jedis, String namespace, Long index) throws FileNotFoundException {
-		System.out.println("Gnu3.6");
+//		System.out.println("Gnu3.6");
 		if (!jedis.exists(HashKey(namespace, index)))
 		{
-			System.out.println("Gnu3.7");
+//			System.out.println("Gnu3.7");
 			throw new FileNotFoundException("task not found");
 			
 		}
-		System.out.println("Gnu3.8");
+//		System.out.println("Gnu3.8");
 		load(jedis,namespace,index);
-		System.out.println("Gnu3.9");
+//		System.out.println("Gnu3.9");
 	}
 
 	private void load(Jedis jedis, String namespace, Long index) {
