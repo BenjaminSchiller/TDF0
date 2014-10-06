@@ -13,10 +13,7 @@
 	<modules>
 		<module>client</module>
 		<module>common</module>
-		<module>server</module>
 		<module>logserver</module>
-		<module>sum-worker</module>
-		<module>stock-worker</module>
 	</modules>
 
 	<build>
