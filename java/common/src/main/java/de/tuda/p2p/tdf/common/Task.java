@@ -294,7 +294,7 @@ public class Task implements TaskLike {
 	}
 
 	private String HashKey(String namespace, Long index) {
-		return "tdf." + namespace + ".task." + index;
+		return "tdf:" + namespace + ":task:" + index;
 	}
 	
 	public void loadFromJson(JsonNode jn)
@@ -838,8 +838,8 @@ public class Task implements TaskLike {
 	
 	public void requeue(Jedis jedis) {
 		System.out.println("Requeueing");
-		jedis.srem("tdf." + getNamespace() + ".running", getIndex().toString());
-		jedis.srem("tdf." + getNamespace() + ".new", getIndex().toString());
+		jedis.srem("tdf:" + getNamespace() + ":running", getIndex().toString());
+		jedis.srem("tdf:" + getNamespace() + ":new", getIndex().toString());
 
 		// remove client and started information
 		jedis.hdel(HashKey(getNamespace(), getIndex()), "started");
@@ -847,7 +847,7 @@ public class Task implements TaskLike {
 		jedis.hdel(HashKey(getNamespace(), getIndex()), "finished");
 
 		// add task to the front of the queuing list
-		jedis.lpush("tdf." + getNamespace() + ".queuing", getIndex().toString());
+		jedis.lpush("tdf:" + getNamespace() + ":queuing", getIndex().toString());
 		// TODO Auto-generated method stub
 	}
 

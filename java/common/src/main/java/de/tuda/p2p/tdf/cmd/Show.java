@@ -26,12 +26,12 @@ public class Show extends CMD {
 	private static void show(String identifier) {
 		String namespace=identifier.split("\\.")[1];
 		String type,index;
-		if(identifier.split("\\.").length==2){
+		if(identifier.split("\\:").length==2){
 			type="namespace";
 			index="0";
 		}else{
-			index=identifier.split("\\.")[3];
-			type = identifier.split("\\.")[2];
+			index=identifier.split("\\:")[3];
+			type = identifier.split("\\:")[2];
 		}
 		
 		switch(type){

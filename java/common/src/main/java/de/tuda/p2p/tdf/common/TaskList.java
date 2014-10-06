@@ -67,15 +67,15 @@ public class TaskList implements TaskLike {
 	 */
 
 	private String ListKey(String namespace, Long index) {
-		return "tdf." + namespace + ".tasklist." + index;
+		return "tdf:" + namespace + ":tasklist:" + index;
 	}
 
 	private String HashKey(String namespace, Long index) {
-		return ListKey(namespace, index) + ".defaults";
+		return ListKey(namespace, index) + ":defaults";
 	}
 
 	private String SetKey(String namespace, Long index) {
-		return ListKey(namespace, index) + ".tasks";
+		return ListKey(namespace, index) + ":tasks";
 	}
 
 	/**
@@ -479,14 +479,14 @@ public class TaskList implements TaskLike {
 	public void requeue() {
 		System.out.println("Requeueing");
 		// remove task from the running set
-		jedis.srem("tdf." + getNamespace() + ".running", getIndex().toString());
+		jedis.srem("tdf:" + getNamespace() + ":running", getIndex().toString());
 
 		// remove client and started information
 		jedis.hdel(HashKey(getNamespace(), getIndex()), "started");
 		jedis.hdel(HashKey(getNamespace(), getIndex()), "client");
 
 		// add task to the front of the queuing list
-		jedis.lpush("tdf." + getNamespace() + ".queuinglists", getIndex().toString());
+		jedis.lpush("tdf:" + getNamespace() + ":queuinglists", getIndex().toString());
 		// TODO Auto-generated method stub
 		for(Task task: getTasks()) task.requeue(jedis);
 		

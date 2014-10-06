@@ -15,7 +15,7 @@ public class ExportProcessed extends CMD{
 
 	public static String exportProcessed(){
 		StringBuilder sb = new StringBuilder("[\n");
-		for (String namespace : jedis.smembers("tdf.namespaces"))
+		for (String namespace : jedis.smembers("tdf:namespaces"))
 			sb.append(exportProcessed(namespace)+",\n");
 		if(sb.lastIndexOf(",")>0) sb.deleteCharAt(sb.lastIndexOf(","));
 		sb.append("]");

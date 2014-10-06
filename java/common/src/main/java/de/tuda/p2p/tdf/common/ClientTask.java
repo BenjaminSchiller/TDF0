@@ -48,7 +48,7 @@ public class ClientTask extends Task {
 			}
 			return getIndex().toString();
 		}
-		return getNamespace() + "." + getIndex();
+		return getNamespace() + ":" + getIndex();
 	}
 
 	public File getBaseDir() {

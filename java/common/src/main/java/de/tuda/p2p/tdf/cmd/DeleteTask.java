@@ -24,41 +24,41 @@ public class DeleteTask extends CMD {
 		Set<String> tasksSet = new HashSet<String>();
 		Set<String> taskListsSet = new HashSet<String>();
 
-		List<String> tasks = jedis.lrange("tdf." + namespace + ".queuing", 0, jedis.llen("tdf." + namespace + ".queuing"));
+		List<String> tasks = jedis.lrange("tdf:" + namespace + ":queuing", 0, jedis.llen("tdf:" + namespace + ":queuing"));
 		
 		if(tasks != null)
 			tasksSet.addAll(tasks);
 		
-		List<String> taskLists = jedis.lrange("tdf." + namespace + ".queuing", 0, jedis.llen("tdf." + namespace + ".queuinglists"));
+		List<String> taskLists = jedis.lrange("tdf:" + namespace + ":queuing", 0, jedis.llen("tdf:" + namespace + ":queuinglists"));
 		if(taskLists != null)
 			taskListsSet.addAll(taskLists);
 		
 		for(String task : tasksSet){
-			jedis.del("tdf." + namespace + ".task." + task);
+			jedis.del("tdf:" + namespace + ":task:" + task);
 		}
 		
 		for(String taskList : taskListsSet){
-			jedis.del("tdf." + namespace + ".tasklist." + taskList + ".tasks");
+			jedis.del("tdf:" + namespace + ":tasklist:" + taskList + ":tasks");
 		}
 		
-		jedis.del("tdf." + namespace + ".queuing", "tdf." + namespace + ".queuinglists", "tdf." + namespace + ".running", "tdf." + namespace + ".completed", "tdf." + namespace + ".processed");
+		jedis.del("tdf:" + namespace + ":queuing", "tdf:" + namespace + ":queuinglists", "tdf:" + namespace + ":running", "tdf:" + namespace + ":completed", "tdf:" + namespace + ":processed");
 				
 		return true;
 	}
 
 	public static boolean deleteTask(String identifier) {
 		
-		String namespace=identifier.split("\\.")[1];
-		String index=identifier.split("\\.")[3];
+		String namespace=identifier.split("\\:")[1];
+		String index=identifier.split("\\:")[3];
 		
 		// delete task information
-		Long result = jedis.del("tdf." + namespace + ".task." + index);
+		Long result = jedis.del("tdf:" + namespace + ":task:" + index);
 
 		// delete task from queuing list and running, completed and processed set
-		result += jedis.lrem("tdf." + namespace + ".queuing", 0, index.toString());
-		result += jedis.srem("tdf." + namespace + ".running", index.toString());
-		result += jedis.srem("tdf." + namespace + ".completed", index.toString());
-		result += jedis.srem("tdf." + namespace + ".processed", index.toString());
+		result += jedis.lrem("tdf:" + namespace + ":queuing", 0, index.toString());
+		result += jedis.srem("tdf:" + namespace + ":running", index.toString());
+		result += jedis.srem("tdf:" + namespace + ":completed", index.toString());
+		result += jedis.srem("tdf:" + namespace + ":processed", index.toString());
 
 		return (result == 2);
 	}

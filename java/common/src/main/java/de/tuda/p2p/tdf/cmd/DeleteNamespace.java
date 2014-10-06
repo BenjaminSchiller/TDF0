@@ -28,10 +28,10 @@ public class DeleteNamespace extends CMD {
 //		keys.add("tdf." + namespace + "."+"new");
 //		keys.addAll(jedis.keys("tdf." + namespace + ".task.*"));
 //		keys.addAll(jedis.keys("tdf." + namespace + ".tasklist.*"));
-		keys.addAll(jedis.keys("tdf." + namespace + "*"));
+		keys.addAll(jedis.keys("tdf:" + namespace + "*"));
 		jedis.del(keys.toArray(new String[0]));
 		
-		jedis.srem("tdf.namespaces",namespace);
+		jedis.srem("tdf:namespaces",namespace);
 		return true;
 	}
 	

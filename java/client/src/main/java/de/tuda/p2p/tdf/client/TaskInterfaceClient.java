@@ -125,7 +125,7 @@ public class TaskInterfaceClient {
 		if (namespaces == null || namespaces.isEmpty()) {
 			// execute tasks from all namespaces
 			Client.logMessage("Execute tasks from all namespaces", true);
-			namespaces = new ArrayList<String>(getJedis().smembers("tdf.namespaces"));
+			namespaces = new ArrayList<String>(getJedis().smembers("tdf:namespaces"));
 		}
 		List<String> namespaces=new ArrayList<String>(this.namespaces);
 		if (getTaskList() == null || getTaskList().getOpenTasks().isEmpty()){
@@ -146,8 +146,8 @@ public class TaskInterfaceClient {
 			Client.logMessage("fu?");
 			ClientTask ct = new ClientTask(t);
 			Client.logMessage("bar");
-			jedis.lrem("tdf."+ct.getNamespace()+".queuing", 1, ct.getIndex().toString());
-			jedis.sadd("tdf."+ct.getNamespace()+".running", ct.getIndex().toString());
+			jedis.lrem("tdf:"+ct.getNamespace()+":queuing", 1, ct.getIndex().toString());
+			jedis.sadd("tdf:"+ct.getNamespace()+":running", ct.getIndex().toString());
 			return ct;
 		} catch (FileNotFoundException e) {
 			getTaskList().deltask(t);
@@ -187,7 +187,7 @@ public class TaskInterfaceClient {
 		Client.logMessage("Get task from namespace: " + namespace, true);
 		Long firstExpiredIndex = null;
 		do {
-			index = getJedis().lpop("tdf." + namespace + ".queuing");
+			index = getJedis().lpop("tdf:" + namespace + ":queuing");
 			if (index == null) {
 				Client.logMessage("Queuing list is empty", true);
 				return null;
@@ -204,7 +204,7 @@ public class TaskInterfaceClient {
 
 				// add the expired task to the end of the queue, the server
 				// needs to delete them
-				getJedis().rpush("tdf." + namespace + ".queuing", index);				
+				getJedis().rpush("tdf:" + namespace + ":queuing", index);				
 
 				if (firstExpiredIndex == null) {
 					firstExpiredIndex = task.getIndex();					
@@ -218,7 +218,7 @@ public class TaskInterfaceClient {
 			}
 		} while (task.isExpired());
 
-		getJedis().sadd("tdf." + namespace + ".running", index);
+		getJedis().sadd("tdf:" + namespace + ":running", index);
 
 		if ( ! task.isValid()) {
 			// wait for the task to be valid
@@ -235,7 +235,7 @@ public class TaskInterfaceClient {
 		Client.logMessage("Get tasklist from namespace: " + namespace, true);
 		Long firstExpiredIndex = null;
 		do {
-			index = getJedis().lpop("tdf." + namespace + ".queuinglists");
+			index = getJedis().lpop("tdf:" + namespace + ":queuinglists");
 			if (index == null) {
 				Client.logMessage("Queuing list is empty", true);
 				return null;
@@ -261,7 +261,7 @@ public class TaskInterfaceClient {
 
 				// add the expired task to the end of the queue, the server
 				// needs to delete them
-				getJedis().rpush("tdf." + namespace + ".queuing", index);	
+				getJedis().rpush("tdf:" + namespace + ":queuing", index);	
 				Client.logMessage("8");
 
 
@@ -287,7 +287,7 @@ public class TaskInterfaceClient {
 		} while (tasklist.isExpired());
 		Client.logMessage("13");
 
-		getJedis().sadd("tdf." + namespace + ".running", index);
+		getJedis().sadd("tdf:" + namespace + ":running", index);
 		Client.logMessage("14");
 
 		if ( ! tasklist.isValid()) {
@@ -299,10 +299,10 @@ public class TaskInterfaceClient {
 
 		String Tasks ="";
 		for (Task task : tasklist.getTasks())
-			Tasks+=","+task.getNamespace()+"."+task.getIndex();
+			Tasks+=","+task.getNamespace()+":"+task.getIndex();
 		Client.logMessage("16");
 
-		Logger.debug("Claim_Tasklist,"+clientId+","+tasklist.getNamespace()+"."+tasklist.getIndex()+Tasks);
+		Logger.debug("Claim_Tasklist,"+clientId+","+tasklist.getNamespace()+":"+tasklist.getIndex()+Tasks);
 		
 		Client.logMessage("17");
 		
@@ -321,7 +321,7 @@ public class TaskInterfaceClient {
 	 * @return A task object or null, if the task cannot be found
 	 */
 	private ClientTask getTask(String namespace, Long index) {
-		String hashKey = "tdf." + namespace + ".task." + index;
+		String hashKey = "tdf:" + namespace + ":task:" + index;
 
 		if (getJedis().hget(hashKey, "worker") == null) {
 			Client.logError("Task '" + index + "' found, but worker information empty.", true);
@@ -460,9 +460,9 @@ public class TaskInterfaceClient {
 	 *            The error message
 	 */
 	public void fail(ClientTask task, String errorMessage) {
-		Client.logError("Task '" + task.getNamespace() + "'.'"
+		Client.logError("Task '" + task.getNamespace() + "':'"
 				+ task.getIndex() + "' error: " + errorMessage);
-		Logger.error("Task_Fail,"+clientId+","+task.getNamespace() + "."
+		Logger.error("Task_Fail,"+clientId+","+task.getNamespace() + ":"
 				+ task.getIndex());
 		task.setError(errorMessage);
 		task.setFinished(DateTime.now());
@@ -471,7 +471,7 @@ public class TaskInterfaceClient {
 		if (task.save(jedis) == -1L) {
 			Client.logError("Task '"
 							+ task.getNamespace()
-							+ "'.'"
+							+ "':'"
 							+ task.getIndex()
 							+ "' failed, saving back to Redis failed also. Original error message: "
 							+ errorMessage);
@@ -490,7 +490,7 @@ public class TaskInterfaceClient {
 	 * @return The task object with filled output, log and error fields
 	 */
 	public ClientTask runTask(ClientTask task) throws TaskException {
-		Logger.log("Task_Start,"+clientId+","+task.getNamespace()+"."+task.getIndex());
+		Logger.log("Task_Start,"+clientId+","+task.getNamespace()+":"+task.getIndex());
 		if (!executeScript(task, "run.sh"))
 			throw new TaskException("run.sh did not return 0\nhave this stderr:\n\n"+emergencyReadErrorFile(task));
 		
@@ -509,8 +509,8 @@ public class TaskInterfaceClient {
 
 			// move to finished set
 			Client.logMessage("Move task to completed set.", true);
-			jedis.smove("tdf." + task.getNamespace() + ".running",
-						"tdf." + task.getNamespace() + ".completed",
+			jedis.smove("tdf:" + task.getNamespace() + ":running",
+						"tdf:" + task.getNamespace() + ":completed",
 						task.getIndex().toString());
 		} else {
 			throw new TaskException("Task deleted in redis or client id does not match. Will not save task results to redis.");

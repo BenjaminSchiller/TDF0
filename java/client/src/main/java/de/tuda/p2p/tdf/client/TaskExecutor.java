@@ -87,7 +87,7 @@ public class TaskExecutor extends Thread {
 						task.start(clientId);
 						
 						Client.logMessage("Execute task '" + task.toString() + "'");
-						Logger.debug("Task_Init,"+clientId+","+task.getNamespace()+"."+task.getIndex());
+						Logger.debug("Task_Init,"+clientId+","+task.getNamespace()+":"+task.getIndex());
 
 						// execute task
 						task.setBaseDir(workingDir);
@@ -102,7 +102,7 @@ public class TaskExecutor extends Thread {
 							throw new TaskException("Setup script did not exit with 0.");
 						}
 						
-						Logger.debug("Task_Success,"+clientId+","+task.getNamespace()+"."+task.getIndex());
+						Logger.debug("Task_Success,"+clientId+","+task.getNamespace()+":"+task.getIndex());
 						
 						// wait some time
 						waitSomeTime(task.getWaitAfterSuccess(), waitAfterSuccess);

@@ -21,7 +21,7 @@ public class AddTask extends CMD{
 		
 		t.save(jedis);
 		
-		jedis.sadd("tdf."+t.getNamespace()+".new",t.getIndex().toString());
+		jedis.sadd("tdf:"+t.getNamespace()+":new",t.getIndex().toString());
 		System.out.println("fooRequeueing");
 		Requeue.requeue();
 		//t.requeue(jedis);

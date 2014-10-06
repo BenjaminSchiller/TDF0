@@ -25,7 +25,7 @@ public class Requeue extends CMD {
 		say("requeued " + count + " tasks in "+ Tasklists.size() + " lists");
 	}
 	public static void requeue(){
-		for (String namespace : jedis.smembers("tdf.namespaces")) requeue(namespace);
+		for (String namespace : jedis.smembers("tdf:namespaces")) requeue(namespace);
 		for (TaskList t : Tasklists) {
 			t.save(jedis);
 			t.requeue();
@@ -56,8 +56,8 @@ public class Requeue extends CMD {
 		int listsize= Settings.containsKey("listsize")?Integer.parseInt(Settings.get("listsize")):100;
 		
 		LinkedList<Task> tasks = new LinkedList<Task>();
-		for (String index : jedis.smembers("tdf." + namespace + ".new")){
-				say("tdf." + namespace + ".task." + '"'+index+'"');
+		for (String index : jedis.smembers("tdf:" + namespace + ":new")){
+				say("tdf:" + namespace + ":task:" + '"'+index+'"');
 				try {
 					Task task=new Task(jedis, namespace, Long.parseLong(index));
 					tasks.addFirst(task);
@@ -67,7 +67,7 @@ public class Requeue extends CMD {
 			
 		}
 
-		for (String index : jedis.smembers("tdf." + namespace + ".running")){
+		for (String index : jedis.smembers("tdf:" + namespace + ":running")){
 			
 				try {
 					Task task = new Task(jedis, namespace, Long.parseLong(index));

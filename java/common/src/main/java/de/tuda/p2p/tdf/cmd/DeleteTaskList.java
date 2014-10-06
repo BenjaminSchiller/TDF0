@@ -10,17 +10,17 @@ public class DeleteTaskList extends CMD {
 
 	public static boolean deleteTaskList(String identifier) {
 		
-		String namespace=identifier.split("\\.")[1];
-		String index=identifier.split("\\.")[3];
+		String namespace=identifier.split("\\:")[1];
+		String index=identifier.split("\\:")[3];
 		
 		// delete task information
-		Long result = jedis.del("tdf." + namespace + ".tasklist." + index);
+		Long result = jedis.del("tdf:" + namespace + ":tasklist:" + index);
 
 		// delete task from queuing list and running, completed and processed set
-		result += jedis.lrem("tdf." + namespace + ".queuing", 0, index.toString());
-		result += jedis.srem("tdf." + namespace + ".running", index.toString());
-		result += jedis.srem("tdf." + namespace + ".completed", index.toString());
-		result += jedis.srem("tdf." + namespace + ".processed", index.toString());
+		result += jedis.lrem("tdf:" + namespace + ":queuing", 0, index.toString());
+		result += jedis.srem("tdf:" + namespace + ":running", index.toString());
+		result += jedis.srem("tdf:" + namespace + ":completed", index.toString());
+		result += jedis.srem("tdf:" + namespace + ":processed", index.toString());
 
 		return (result == 2);
 	}
