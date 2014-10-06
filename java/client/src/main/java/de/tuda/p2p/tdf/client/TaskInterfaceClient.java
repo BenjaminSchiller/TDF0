@@ -143,7 +143,9 @@ public class TaskInterfaceClient {
 			Client.logError("Task is empty!");
 		//Client.logMessage("Task" + t.asString());
 		try {
+			Client.logMessage("fu?");
 			ClientTask ct = new ClientTask(t);
+			Client.logMessage("bar");
 			jedis.lrem("tdf."+ct.getNamespace()+".queuing", 1, ct.getIndex().toString());
 			jedis.sadd("tdf."+ct.getNamespace()+".running", ct.getIndex().toString());
 			return ct;

@@ -7,6 +7,9 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
+import argo.jdom.JsonField;
+import argo.jdom.JsonNode;
+
 import redis.clients.jedis.Jedis;
 
 public class Task implements TaskLike {
@@ -292,6 +295,32 @@ public class Task implements TaskLike {
 
 	private String HashKey(String namespace, Long index) {
 		return "tdf." + namespace + ".task." + index;
+	}
+	
+	public void loadFromJson(JsonNode jn)
+	{
+		RedisHash rh = new RedisHash();
+		for (JsonField i : jn.getFieldList()) {
+			if (i.getName().getText().matches("(?i)ID")) {
+				this.setIndex(Long.valueOf(i.getValue().getText()));
+				;
+			} else if (i.getName().getText().matches("(?i)Namespace")) {
+				this.setNamespace(i.getValue().getText());
+			} else {
+				Object v = null;
+				switch (i.getValue().getType()) {
+				case NUMBER:
+				case STRING:
+					v = i.getValue().getText();
+					break;
+				default:
+					return;
+				}
+				rh.put(TaskSetting.valueOf(i.getName().getText()),
+							v.toString());
+			}
+		}
+		this.applyDefaults(rh);
 	}
 
 	/*
@@ -756,7 +785,7 @@ public class Task implements TaskLike {
 		setClient(client);
 		save(getJedis());
 	}
-
+	
 	public void applyDefaults(RedisHash rh) {
 		// set task information
 		if (getInput() == null || getInput().isEmpty()) {
