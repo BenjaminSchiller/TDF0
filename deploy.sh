@@ -28,7 +28,7 @@ cp java/common/target/{commands.jar,cmd.properties,commands.sh} $TARGET/commands
 
 chmod 755 $TARGET/commands/commands.sh
 
-for command in AddNamespace AddTask AddTaskList DeleteNamespace DeleteTaskList ExportProcessed Requeue Show
+for command in AddNamespace AddTask AddTaskList DeleteNamespace DeleteTaskList ExportProcessed QueueSingleTasks Show
 do
 #	echo -n "Press the ANY-Key to continue..."; read -n 1
 	ln -s $(realpath $TARGET/commands/commands.sh) $TARGET/commands/${command}

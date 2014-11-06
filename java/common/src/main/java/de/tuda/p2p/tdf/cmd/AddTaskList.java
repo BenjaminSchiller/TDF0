@@ -5,6 +5,7 @@ import java.util.Vector;
 import argo.jdom.JsonNode;
 import argo.saj.InvalidSyntaxException;
 import de.tuda.p2p.tdf.common.databaseObjects.Task;
+import de.tuda.p2p.tdf.common.databaseObjects.TaskList;
 import de.tuda.p2p.tdf.common.redisEngine.DatabaseFactory;
 
 
@@ -32,7 +33,8 @@ public class AddTaskList extends CMD{
 				namespace = t.getNamespace();
 			}
 			
-			dbFactory.generateTaskList(tl, namespace);
+			TaskList taskl = dbFactory.generateTaskList(tl, namespace);
+			say(taskl.getDBKey());
 		} catch (InvalidSyntaxException e) {
 			System.err.println("Error Reading Json-Input!");
 			e.printStackTrace();

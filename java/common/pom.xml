@@ -168,11 +168,7 @@
 					    <src>${basedir}/target/commands.sh</src>
 					</link>
 					<link>
-					    <dst>${basedir}/target/Requeue</dst>
-					    <src>${basedir}/target/commands.sh</src>
-					</link>
-					<link>
-					    <dst>${basedir}/target/Show</dst>
+					    <dst>${basedir}/target/QueueSingleTasks</dst>
 					    <src>${basedir}/target/commands.sh</src>
 					</link>
 					<link>

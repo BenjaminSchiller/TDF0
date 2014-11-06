@@ -13,7 +13,7 @@ public class AddTask extends CMD{
 		try {
 			Task t = new Task();
 			t.loadFromJson(getInput(args));
-			dbFactory.addSingleTask(t);
+			say(dbFactory.addSingleTask(t));
 			
 		} catch (InvalidSyntaxException e) {
 			System.err.println("Error Reading Json-Input!");
