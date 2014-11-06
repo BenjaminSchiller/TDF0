@@ -6,20 +6,26 @@ import java.util.Set;
 
 import argo.jdom.JsonNode;
 
+/**
+ * To be discussed if still needed/how to implement
+ * maybe just give key and it will be deleted (AddTaskList has to give back key...)
+ * @author jan
+ *
+ */
 public class DeleteTask extends CMD {
 	
 	public static void main(String[] args){
 		init();		
-		if(args.length == 2 && args[0].equals("-a")) {
+/*		if(args.length == 2 && args[0].equals("-a")) {
 			System.out.println("Deleting all tasks in namespace " + args[1]);
 			deleteTasksNamespace(args[1]);
 		}
 		else {
 			delete(parsejson(getInput(args)));
-		}
+		}*/
 	}
 	
-	public static boolean deleteTasksNamespace(String namespace)
+/*	public static boolean deleteTasksNamespace(String namespace)
 	{
 		Set<String> tasksSet = new HashSet<String>();
 		Set<String> taskListsSet = new HashSet<String>();
@@ -67,6 +73,6 @@ public class DeleteTask extends CMD {
 		for (JsonNode cn : jn.getElements()){
 			deleteTask(cn.getText());
 		}
-	}
+	}*/
 
 }

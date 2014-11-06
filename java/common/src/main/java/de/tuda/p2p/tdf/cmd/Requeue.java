@@ -8,16 +8,21 @@ import java.util.List;
 
 //import com.sun.xml.internal.ws.api.pipe.NextAction;
 
-import de.tuda.p2p.tdf.common.Task;
-import de.tuda.p2p.tdf.common.TaskList;
+import de.tuda.p2p.tdf.common.databaseObjects.Task;
+import de.tuda.p2p.tdf.common.databaseObjects.TaskList;
 
+/**
+ * Check if still needed!
+ * @author jan
+ *
+ */
 public class Requeue extends CMD {
 	
 	private static LinkedList<TaskList> Tasklists = new LinkedList<TaskList>();
 	
 	public static void main(String[] args){
 		init();
-		requeue();
+/*		requeue();
 		int count=0;
 		for (TaskList t : Tasklists) {
 			count+= t.getTasks().size();
@@ -29,9 +34,9 @@ public class Requeue extends CMD {
 		for (TaskList t : Tasklists) {
 			t.save(jedis);
 			t.requeue();
-		}
+		}*/
 	}
-	public static void requeue(String namespace) {
+/*	public static void requeue(String namespace) {
 		
 		class TaskComparator implements Comparator<Task>{
 
@@ -99,5 +104,5 @@ public class Requeue extends CMD {
 		}
 		return r;
 	}
-
+*/
 }

@@ -17,6 +17,8 @@ import javax.naming.ConfigurationException;
 
 import org.apache.commons.io.IOUtils;
 
+import de.tuda.p2p.tdf.common.redisEngine.DatabaseFactory;
+
 import redis.clients.jedis.Jedis;
 import argo.jdom.JdomParser;
 import argo.jdom.JsonField;
@@ -26,13 +28,13 @@ import argo.saj.InvalidSyntaxException;
 
 public abstract class CMD {
 
-	protected static Jedis jedis;
+	protected static DatabaseFactory dbFactory;
 	protected static Map<String,String> Settings =new HashMap<String,String>(); 
 	
 	public static void init() {
 
 		try {
-             jedis = loadConfig();
+             dbFactory = loadConfig();
         }
         catch (FileNotFoundException e) {
 			System.out.println("Could not find config file 'cmd.properties'.");
@@ -68,7 +70,7 @@ public abstract class CMD {
 	 *             Thrown if information in the configuration file is missing or
 	 *             can not be parsed
 	 */
-	private static Jedis loadConfig() throws URISyntaxException,
+	private static DatabaseFactory loadConfig() throws URISyntaxException,
 			FileNotFoundException, IOException, ConfigurationException {
 
 		File configFile = new File("./", "cmd.properties");
@@ -78,33 +80,20 @@ public abstract class CMD {
 		config.load(new FileInputStream(configFile));
 		
 		String hostname = config.getProperty("redis.host");
-		if(hostname == null)
-			hostname = "localhost";
-		
 		String port = config.getProperty("redis.port");
-		if(port == null)
-			port = "6379";
-		
-		Jedis jedis = new Jedis(hostname, Integer.valueOf(port));
-		
 		String index = config.getProperty("redis.index");
-		if(index == null)
-			index = "0";
-		
-		jedis.select(Integer.valueOf(index));
-		
 		String password = config.getProperty("redis.auth");
-		if(password != null && !password.isEmpty())
-			jedis.auth(password);
-						
-		return jedis;
+		
+		DatabaseFactory dbF = new DatabaseFactory(hostname, port, index, password);
+
+		return dbF;
 	}
 	
 	private static void err(String string) {
 		System.err.println(string);
 	}
 
-	protected static JsonNode parsejson(String s){
+/*	protected static JsonNode parsejson(String s){
 		JdomParser json=new JdomParser();
 		JsonNode jn;
 		try {
@@ -114,7 +103,7 @@ public abstract class CMD {
 			return null;	
 		}
 		return jn;
-	}
+	}*/
 
 	
 	protected static String getInput(String[] args) {

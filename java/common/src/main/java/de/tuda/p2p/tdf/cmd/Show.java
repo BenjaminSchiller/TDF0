@@ -3,17 +3,22 @@ package de.tuda.p2p.tdf.cmd;
 import java.io.FileNotFoundException;
 
 import argo.jdom.JsonNode;
-import de.tuda.p2p.tdf.common.Namespace;
-import de.tuda.p2p.tdf.common.Task;
-import de.tuda.p2p.tdf.common.TaskList;
+import de.tuda.p2p.tdf.common.databaseObjects.Namespace;
+import de.tuda.p2p.tdf.common.databaseObjects.Task;
+import de.tuda.p2p.tdf.common.databaseObjects.TaskList;
 
+/**
+ * Unused at the moment!
+ * @author jan
+ *
+ */
 public class Show extends CMD {
 	
 	public static void main(String[] args){
 		init();
-		show(parsejson(getInput(args)));
+		//show(parsesjson(getInput(args)));
 	}
-	
+/*	
 	private static void show(JsonNode jn){
 		if (jn.hasElements()){
 			for ( JsonNode i :jn.getElements())
@@ -57,5 +62,5 @@ public class Show extends CMD {
 		}
 		
 	}
-
+*/
 }

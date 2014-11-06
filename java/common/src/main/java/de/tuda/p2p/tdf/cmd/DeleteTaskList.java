@@ -2,12 +2,18 @@ package de.tuda.p2p.tdf.cmd;
 
 import argo.jdom.JsonNode;
 
+/**
+ * To be discussed if still needed/how to implement
+ * maybe just give key and it will be deleted (AddTaskList has to give back key...)
+ * @author jan
+ *
+ */
 public class DeleteTaskList extends CMD {
 	
 	public static void main(String[] args){
-		delete(parsejson(getInput(args)));
+//		delete(parsejson(getInput(args)));
 	}
-
+/*
 	public static boolean deleteTaskList(String identifier) {
 		
 		String namespace=identifier.split("\\:")[1];
@@ -30,5 +36,5 @@ public class DeleteTaskList extends CMD {
 			deleteTaskList(cn.getText());
 		}
 	}
-
+*/
 }

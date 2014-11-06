@@ -8,6 +8,8 @@ import java.net.URISyntaxException;
 import org.apache.commons.io.FilenameUtils;
 import org.joda.time.DateTime;
 
+import de.tuda.p2p.tdf.common.databaseObjects.Task;
+
 import redis.clients.jedis.Jedis;
 
 public class ClientTask extends Task {
@@ -16,40 +18,6 @@ public class ClientTask extends Task {
 	File baseDir;
 
 	File taskIndexDir;
-
-	/**
-	 * Constructor that fills itself from Redis
-	 * 
-	 * @param jedis
-	 *            The Jedis instance
-	 * @param hashKey
-	 *            The task information hash key
-	 * @throws FileNotFoundException 
-	 */
-	public ClientTask(Jedis jedis, String namespace, Long index) throws FileNotFoundException {
-		super(jedis, namespace, index);
-	}
-
-	public ClientTask() {
-	}
-	
-	public ClientTask(Task task) throws FileNotFoundException{
-		super(task.getJedis(),task.getNamespace(),task.getIndex());
-	}
-
-	/**
-	 * Returns ${namespace}.${index}
-	 */
-	@Override
-	public String toString() {
-		if (getNamespace() == null) {
-			if (getIndex() == null) {
-				return super.toString();
-			}
-			return getIndex().toString();
-		}
-		return getNamespace() + ":" + getIndex();
-	}
 
 	public File getBaseDir() {
 		return baseDir;
@@ -134,6 +102,10 @@ public class ClientTask extends Task {
 		return new File(getTasksDir(), getSession());
 	}
 
+	private String getSession() {
+		return (String) this.getField("session");
+	}
+
 	/**
 	 * Returns the task's directory
 	 * 
@@ -148,6 +120,11 @@ public class ClientTask extends Task {
 			return new File(getSessionDir(), getIndex().toString());
 		}
 		return taskIndexDir;
+	}
+
+	public Object getIndex() {
+		String[] dbKeySplit = this.getDbKey().split(":");
+		return dbKeySplit[dbKeySplit.length-1];
 	}
 
 	/**
@@ -222,10 +199,8 @@ public class ClientTask extends Task {
 	 *         namespace or index field is not set)
 	 */
 	public Long save(Jedis jedis) {
-		if (getNamespace() == null || getNamespace().isEmpty()) {
-			return -1L;
-		}
-		return this.save(jedis, getNamespace());
+		this.saveToDB(jedis, this.getDbKey());
+		return (Long) getIndex();
 	}
 
 	/**
@@ -240,94 +215,31 @@ public class ClientTask extends Task {
 	 *         field is not set)
 	 */
 	public Long save(Jedis jedis, String namespace) {
-		if (getIndex() == null) {
-			return -1L;
-		}
-		return this.save(jedis, namespace, getIndex());
-	}
-
-	/**
-	 * Saves the task. If a task with the given index exists, it will be
-	 * updated/overwritten.
-	 * 
-	 * @param jedis
-	 *            The Jedis instance
-	 * @param namespace
-	 *            The namespace of the task
-	 * @param index
-	 *            The index of the task
-	 * @return The task's index, if successful, -1 if not
-	 */
-	@Override
-	public Long save(Jedis jedis, String namespace, Long index) {
-		Long result = super.save(jedis, namespace, index);
-
-		if (result == -1L) {
-			return -1L;
-		}
-
-		String hashKey = "tdf." + namespace + ".task." + index;
-
-		if (!getOutput().isEmpty()) {
-			jedis.hset(hashKey, "output", getOutput());
-		}
-		if (!getLog().isEmpty()) {
-			jedis.hset(hashKey, "log", getLog());
-		}
-		if (!getError().isEmpty()) {
-			jedis.hset(hashKey, "error", getError());
-		}
-		if (!getClient().isEmpty()) {
-			jedis.hset(hashKey, "client", getClient());
-		}
-		if (getStartedAsString() != null) {
-			jedis.hset(hashKey, "started", getStartedAsString());
-		}
-		if (getFinishedAsString() != null) {
-			jedis.hset(hashKey, "finished", getFinishedAsString());
-		}
-
-		return index;
+		return this.save(jedis);
 	}
 
 	public void setOutput(String output) {
-		if (output != null) {
-			super.setOutput(output);
-		} else {
-			super.setOutput("");
-		}
+		this.setField("output", output);
 	}
 
 	public void setLog(String log) {
-		if (log != null) {
-			super.setLog(log);
-		} else {
-			super.setLog("");
-		}
+		this.setField("log", log);
 	}
 
 	public void setError(String error) {
-		if (error != null) {
-			super.setError(error);
-		} else {
-			super.setError("");
-		}
+		this.setField("error", error);
 	}
 
 	public void setClient(String client) {
-		if (client != null) {
-			super.setClient(client);
-		} else {
-			super.setClient("");
-		}
+		this.setField("client", client);
 	}
 
 	public void setStarted(DateTime started) {
-		super.setStarted(started);
+		this.setField("started", started);
 	}
 
 	public void setFinished(DateTime finished) {
-		super.setFinished(finished);
+		this.setField("finished", finished);
 	}
 
 	/**
@@ -339,6 +251,10 @@ public class ClientTask extends Task {
 		} catch (URISyntaxException e) {
 			return null;
 		}
+	}
+
+	private String getWorker() {
+		return (String) this.getField("worker");
 	}
 
 	/**
@@ -365,6 +281,42 @@ public class ClientTask extends Task {
 			return getWorker();
 		}
 		return FilenameUtils.removeExtension(getWorkerFileName());
+	}
+
+	public String getInput() {
+		return (String) this.getField("input");
+	}
+
+	public Long getTimeout() {
+		return (Long) this.getField("timeout");
+	}
+
+	public String getClient() {
+		return (String) this.getField("client");
+	}
+	
+    /**
+     * "Starts" a task by setting the client id and the started attribute to
+     * "now". Used for testing purposes.
+     * 
+     * @param client
+     *            The client that executes the task
+     */
+    public void start(String client) {
+            this.setStarted(DateTime.now());
+            setClient(client);
+    }
+
+	public Integer getWaitAfterSetupError() {
+		return (Integer) this.getField("waitAfterSetupError");
+	}
+	
+	public Integer getWaitAfterSuccess() {
+		return (Integer) this.getField("waitAfterSuccess");
+	}
+
+	public Integer getWaitAfterRunError() {
+		return (Integer) this.getField("waitAfterRunError");
 	}
 
 }

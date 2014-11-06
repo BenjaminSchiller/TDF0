@@ -21,8 +21,9 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import de.tuda.p2p.tdf.common.ClientTask;
 import de.tuda.p2p.tdf.common.Logger;
-import de.tuda.p2p.tdf.common.Task;
-import de.tuda.p2p.tdf.common.TaskList;
+import de.tuda.p2p.tdf.common.databaseObjects.Task;
+import de.tuda.p2p.tdf.common.databaseObjects.TaskList;
+import de.tuda.p2p.tdf.common.redisEngine.DatabaseFactory;
 
 public class TaskInterfaceClient {
 
@@ -32,309 +33,15 @@ public class TaskInterfaceClient {
 	private String auth;
 
 	private String clientId;
-	private Jedis jedis;
-	private List<String> namespaces;
-	private TaskList taskList;
+	protected List<String> namespaces;
+	private DatabaseFactory dbFactory;
 
-	/**
-	 * Constructor
-	 *
-	 * @param clientId
-	 *            The id to identify the client
-	 * @param host
-	 *            The Redis server host
-	 * @param port
-	 *            The Redis server port
-	 * @param index
-	 *            The Redis database index
-	 * @param auth
-	 *            The Redis password
-	 * @param namespaces
-	 *            The namespaces to execute
-	 */
-	public TaskInterfaceClient(String clientId, String host, Integer port,
-			Integer index, String auth, List<String> namespaces) {
+
+	public TaskInterfaceClient(String clientId, DatabaseFactory dbFactory, List<String> namespaces) {
 		this.clientId = clientId;
 		this.namespaces = namespaces;
 
-		this.host = host;
-		this.port = port;
-		this.index = index;
-		this.auth = auth;
-		
-		connect();
-	}
-
-	/**
-	 * Connect to the Redis database
-	 */
-	private void connect() {
-		this.jedis = new Jedis(host, port);
-		if (auth != null && !auth.isEmpty()) {
-			jedis.auth(auth);
-		}
-		jedis.select(index);			
-	}		
-
-	/**
-	 * Gives access to the Redis library directly
-	 *
-	 * @return The Jedis object
-	 */
-	public Jedis getJedis() {
-		Integer i = 0;
-		while ( ! jedis.isConnected() || i < 10) {
-			i++;
-			try {
-				jedis.ping();
-			} catch (JedisConnectionException e) {
-				Client.logError("Connection lost, try to reconnect.", true);
-				try {
-					connect();
-				} catch (JedisConnectionException ex) {
-					// Try to connect 10 times, wait 1s between, then give up					
-					if ( i >= 10) {
-						throw e;
-					}
-					try {
-						Thread.sleep(1000);
-					} catch (InterruptedException e1) {
-						throw e;
-					}					
-				}
-			}
-		}
-
-		return jedis;			
-	}
-
-	/**
-	 * Returns the next task to execute from any namespace
-	 * 
-	 * @param waitQueueExpired
-	 *            the time in milliseconds to wait if the queue has only expired
-	 *            tasks
-	 * @return A task object or null, if no tasks are currently queuing
-	 * @throws InterruptedException
-	 *             Thrown if the thread is interrupted while waiting for the
-	 *             task to be valid
-	 */
-	public ClientTask getTaskToExecute(Integer waitQueueExpired) throws InterruptedException {
-		//just to be sure... (we shuffle this later and don't want this to interfere with other functions)
-		Client.logMessage("Getting task...");
-		if (namespaces == null || namespaces.isEmpty()) {
-			// execute tasks from all namespaces
-			Client.logMessage("Execute tasks from all namespaces", true);
-			namespaces = new ArrayList<String>(getJedis().smembers("tdf:namespaces"));
-		}
-		List<String> namespaces=new ArrayList<String>(this.namespaces);
-		if (getTaskList() == null || getTaskList().getOpenTasks().isEmpty()){
-//			Collections.shuffle(namespaces);
-		for (String namespace : namespaces) {
-			if (getTaskList() == null || getTaskList().getOpenTasks().isEmpty()) {
-				setTaskList(getTaskListToExecute(namespace, waitQueueExpired));
-			}else break;
-
-		}}
-		if (getTaskList() == null) return null;
-		Task t = getTaskList().getOpenTasks().getany();
-		Client.logMessage("raberberbarbera");
-		if(t == null)
-			Client.logError("Task is empty!");
-		//Client.logMessage("Task" + t.asString());
-		try {
-			Client.logMessage("fu?");
-			ClientTask ct = new ClientTask(t);
-			Client.logMessage("bar");
-			jedis.lrem("tdf:"+ct.getNamespace()+":queuing", 1, ct.getIndex().toString());
-			jedis.sadd("tdf:"+ct.getNamespace()+":running", ct.getIndex().toString());
-			return ct;
-		} catch (FileNotFoundException e) {
-			getTaskList().deltask(t);
-			System.out.println("File not found: " + t.asString());
-			return null;
-		}
-		
-	}
-
-	private TaskList getTaskList() {
-		// TODO Auto-generated method stub
-		return this.taskList;
-	}
-
-	private void setTaskList(TaskList taskList) {
-		this.taskList = taskList;
-	}
-
-	/**
-	 * Returns the next task to execute from a given namespace
-	 *
-	 * @param namespace
-	 *            The namespace of the task
-	 * @param waitQueueExpired
-	 *            The time to wait in milliseconds when the queue has only expired tasks
-	 * @return A task object or null, if no tasks are currently queuing in this
-	 *         namespace
-	 * @throws InterruptedException
-	 *             Thrown if the thread is interrupted while waiting for the
-	 *             task to be valid
-	 */
-	@SuppressWarnings("unused")
-	private ClientTask getTaskToExecute(String namespace, Integer waitQueueExpired) throws InterruptedException {
-		String index;
-		ClientTask task;
-
-		Client.logMessage("Get task from namespace: " + namespace, true);
-		Long firstExpiredIndex = null;
-		do {
-			index = getJedis().lpop("tdf:" + namespace + ":queuing");
-			if (index == null) {
-				Client.logMessage("Queuing list is empty", true);
-				return null;
-			}
-
-			task = getTask(namespace, Long.valueOf(index));
-			if (task == null) {
-				Client.logError("Task '" + index + "' returned null.", true);
-				return null;
-			}
-
-			if (task.isExpired()) {
-				Client.logMessage("Task '" + index + "' is expired.", true);
-
-				// add the expired task to the end of the queue, the server
-				// needs to delete them
-				getJedis().rpush("tdf:" + namespace + ":queuing", index);				
-
-				if (firstExpiredIndex == null) {
-					firstExpiredIndex = task.getIndex();					
-				} else {
-					if (firstExpiredIndex == task.getIndex()) {
-						Client.logMessage("All tasks are expired, wait " + waitQueueExpired + "ms.", true);
-						Thread.sleep(waitQueueExpired);
-						firstExpiredIndex = null;
-					}
-				}
-			}
-		} while (task.isExpired());
-
-		getJedis().sadd("tdf:" + namespace + ":running", index);
-
-		if ( ! task.isValid()) {
-			// wait for the task to be valid
-			Client.logMessage("Waiting for the task '" + index + "' to get valid...");
-			Thread.sleep(task.validWaitTime());
-		}
-
-		return task;
-	}
-	private TaskList getTaskListToExecute(String namespace, Integer waitQueueExpired) throws InterruptedException {
-		String index;
-		TaskList tasklist;
-
-		Client.logMessage("Get tasklist from namespace: " + namespace, true);
-		Long firstExpiredIndex = null;
-		do {
-			index = getJedis().lpop("tdf:" + namespace + ":queuinglists");
-			if (index == null) {
-				Client.logMessage("Queuing list is empty", true);
-				return null;
-			}
-			Client.logMessage("Fetched Task-List");
-			tasklist = new TaskList();
-			Client.logMessage("2");
-			try {
-				tasklist .load(getJedis(), namespace, Long.valueOf(index));
-				Client.logMessage("3");
-
-			} catch ( FileNotFoundException e) {
-				Client.logMessage("4");
-				Client.logError("Tasklist '" + index + "' returned null.", true);
-				Client.logMessage("5");
-				return null;
-			}
-			if (tasklist.isExpired()) {
-				Client.logMessage("6");
-
-				Client.logMessage("Tasklist '" + index + "' is expired.", true);
-				Client.logMessage("7");
-
-				// add the expired task to the end of the queue, the server
-				// needs to delete them
-				getJedis().rpush("tdf:" + namespace + ":queuing", index);	
-				Client.logMessage("8");
-
-
-				if (firstExpiredIndex == null) {
-					Client.logMessage("9");
-
-					firstExpiredIndex = tasklist.getIndex();
-					Client.logMessage("10");
-
-					
-				} else {
-					if (firstExpiredIndex == tasklist.getIndex()) {
-						Client.logMessage("11");
-
-						Client.logMessage("All tasks are expired, wait " + waitQueueExpired + "ms.", true);
-						Thread.sleep(waitQueueExpired);
-						firstExpiredIndex = null;
-					}
-				}
-			}
-			Client.logMessage("12");
-
-		} while (tasklist.isExpired());
-		Client.logMessage("13");
-
-		getJedis().sadd("tdf:" + namespace + ":running", index);
-		Client.logMessage("14");
-
-		if ( ! tasklist.isValid()) {
-			// wait for the task to be valid
-			Client.logMessage("Waiting for the task '" + index + "' to get valid...");
-			Thread.sleep(tasklist.validWaitTime());
-		}
-		Client.logMessage("15");
-
-		String Tasks ="";
-		for (Task task : tasklist.getTasks())
-			Tasks+=","+task.getNamespace()+":"+task.getIndex();
-		Client.logMessage("16");
-
-		Logger.debug("Claim_Tasklist,"+clientId+","+tasklist.getNamespace()+":"+tasklist.getIndex()+Tasks);
-		
-		Client.logMessage("17");
-		
-		Client.logMessage("Tasklist: " + tasklist.toString());
-
-		return tasklist;
-	}
-
-	/**
-	 * Returns a task object
-	 *
-	 * @param namespace
-	 *            The namespace of the task
-	 * @param index
-	 *            The index of the task
-	 * @return A task object or null, if the task cannot be found
-	 */
-	private ClientTask getTask(String namespace, Long index) {
-		String hashKey = "tdf:" + namespace + ":task:" + index;
-
-		if (getJedis().hget(hashKey, "worker") == null) {
-			Client.logError("Task '" + index + "' found, but worker information empty.", true);
-			return null;
-		}
-
-		try {
-			return new ClientTask(getJedis(), namespace, index);
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
+		this.dbFactory = dbFactory;
 	}
 
 	/**
@@ -468,14 +175,7 @@ public class TaskInterfaceClient {
 		task.setFinished(DateTime.now());
 		
 
-		if (task.save(jedis) == -1L) {
-			Client.logError("Task '"
-							+ task.getNamespace()
-							+ "':'"
-							+ task.getIndex()
-							+ "' failed, saving back to Redis failed also. Original error message: "
-							+ errorMessage);
-		}
+		dbFactory.saveTask(task);
 	}
 
 	/**
@@ -495,7 +195,7 @@ public class TaskInterfaceClient {
 			throw new TaskException("run.sh did not return 0\nhave this stderr:\n\n"+emergencyReadErrorFile(task));
 		
 		
-		ClientTask t = getTask(task.getNamespace(), task.getIndex());
+		ClientTask t = task;
 		if (t != null && t.getClient().equals(clientId)) {
 			Client.logMessage("Writing output, log and error from files to Redis.", true);
 			// set output, log and error capture
@@ -505,13 +205,11 @@ public class TaskInterfaceClient {
 
 			// set finished timestamp
 			task.setFinished(DateTime.now());
-			task.save(jedis);
+			dbFactory.saveTask(task);
 
 			// move to finished set
 			Client.logMessage("Move task to completed set.", true);
-			jedis.smove("tdf:" + task.getNamespace() + ":running",
-						"tdf:" + task.getNamespace() + ":completed",
-						task.getIndex().toString());
+
 		} else {
 			throw new TaskException("Task deleted in redis or client id does not match. Will not save task results to redis.");
 		}
@@ -577,9 +275,11 @@ public class TaskInterfaceClient {
 					.getInputFile().getCanonicalPath(), task.getOutputFile()
 					.getCanonicalPath(), task.getTempDir().getCanonicalPath());
 			pb.directory(task.getBinDir());
+			
+			Long tm = task.getTimeout(); 
 
 			// timer for timeout
-			if (task.getTimeout() != null) {
+			if (tm != null) {
 				timer = new Timer(true);
 				InterruptTimerTask interrupter = new InterruptTimerTask(Thread.currentThread());
 				timer.schedule(interrupter, task.getTimeout());				
@@ -611,7 +311,10 @@ public class TaskInterfaceClient {
 			throw new TaskException("Script failed: " + e.getMessage());
 		} catch (InterruptedException e) {
 			throw new TaskException("Worker timeout, force quit.");
-		} finally {
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}finally {
 			if (p != null) {
 				p.destroy();
 			}

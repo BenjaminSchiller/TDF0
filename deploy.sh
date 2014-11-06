@@ -32,7 +32,7 @@ for command in AddNamespace AddTask AddTaskList DeleteNamespace DeleteTaskList E
 do
 #	echo -n "Press the ANY-Key to continue..."; read -n 1
 	ln -s $(realpath $TARGET/commands/commands.sh) $TARGET/commands/${command}
-#	echo $(realpath $TARGET/commands/commands.sh) $TARGET/commands/${command}
+	echo $(realpath $TARGET/commands/commands.sh) $TARGET/commands/${command}
 done
 
 for ((clientnum=0; clientnum<$2; clientnum++))
