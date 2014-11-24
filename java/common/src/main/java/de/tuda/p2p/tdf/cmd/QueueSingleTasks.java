@@ -11,6 +11,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 
+import de.tuda.p2p.tdf.common.databaseObjects.TaskList;
 import de.tuda.p2p.tdf.common.redisEngine.DatabaseStringQueue;
 
 public class QueueSingleTasks extends CMD {
@@ -55,6 +56,8 @@ public class QueueSingleTasks extends CMD {
 		Collection<String> tasks = dbFactory.getSingleTasks(namespace).getAllCurrent();
 		Integer tasksize = tasks.size();
 		
+		TaskList tasklist = null;
+		
 		if(!equally) {
 			Iterator<String> iter = tasks.iterator();
 			while(tasksize > listsize) {
@@ -64,7 +67,8 @@ public class QueueSingleTasks extends CMD {
 					taskl.add(t);
 					tasksize--;
 				}
-				dbFactory.generateTaskListExisting(taskl, namespace);
+				tasklist = dbFactory.generateTaskListExisting(taskl, namespace);
+				say(tasklist.getDBKey());
 			}
 			
 			List<String> taskl = new LinkedList<String>();
@@ -74,7 +78,8 @@ public class QueueSingleTasks extends CMD {
 				taskl.add(t);
 				tasksize--;
 			}
-			dbFactory.generateTaskListExisting(taskl, namespace);
+			tasklist = dbFactory.generateTaskListExisting(taskl, namespace);
+			say(tasklist.getDBKey());
 		}
 		else {
 			

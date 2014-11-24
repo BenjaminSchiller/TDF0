@@ -2,9 +2,16 @@ package de.tuda.p2p.tdf.cmd;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.PosixParser;
 
 //import com.sun.xml.internal.ws.api.pipe.NextAction;
 
@@ -22,87 +29,42 @@ public class Requeue extends CMD {
 	
 	public static void main(String[] args){
 		init();
-/*		requeue();
-		int count=0;
-		for (TaskList t : Tasklists) {
-			count+= t.getTasks().size();
-		}
-		say("requeued " + count + " tasks in "+ Tasklists.size() + " lists");
-	}
-	public static void requeue(){
-		for (String namespace : jedis.smembers("tdf:namespaces")) requeue(namespace);
-		for (TaskList t : Tasklists) {
-			t.save(jedis);
-			t.requeue();
-		}*/
-	}
-/*	public static void requeue(String namespace) {
 		
-		class TaskComparator implements Comparator<Task>{
+		Options options = new Options();
+		options.addOption("n", true, "Namespace");
 
-			@Override
-			public int compare(Task o1, Task o2) {
-				if (o1==null || o1.getRunBefore() == null){
-					if (o2==null){
-						return 0;
-					}else {
-						return -1;
-					}
-				}else if (o2==null){
-					return 1;
-				}else 
-				return o1.getRunBefore().compareTo(o2.getRunBefore());
-			}
+		String namespace = "";
 
-
-		}
+		CommandLineParser parser = new PosixParser();
+		CommandLine cmd = null;
 				
-		boolean evenout = Settings.containsKey("evenout")?Settings.get("evenout").toUpperCase().equals("TRUE"):true;
-		int listsize= Settings.containsKey("listsize")?Integer.parseInt(Settings.get("listsize")):100;
-		
-		LinkedList<Task> tasks = new LinkedList<Task>();
-		for (String index : jedis.smembers("tdf:" + namespace + ":new")){
-				say("tdf:" + namespace + ":task:" + '"'+index+'"');
-				try {
-					Task task=new Task(jedis, namespace, Long.parseLong(index));
-					tasks.addFirst(task);
-				} catch (FileNotFoundException e) {
-					
-				}
-			
+		try {
+			cmd = parser.parse(options, args);
+		} catch (ParseException e) {
+			say("Error parsing arguments");
+			e.printStackTrace();
+			System.exit(-1);
 		}
+		
+		if(cmd.hasOption("n"))
+			namespace = cmd.getOptionValue("n");
+		
+		Collection<String> requeued;
+		
+		if(namespace.isEmpty())
+			requeued = dbFactory.requeue();
+		else
+			requeued = dbFactory.requeue(namespace);
+		
+		for(String key : requeued)
+			System.out.println(key);
+		
+		System.exit(0);
 
-		for (String index : jedis.smembers("tdf:" + namespace + ":running")){
-			
-				try {
-					Task task = new Task(jedis, namespace, Long.parseLong(index));
-					if (task == null || !task.isTimedOut()) break;
-					tasks.addFirst(task);
-				} catch (FileNotFoundException e) {
-				}
-			
-		}
-		java.util.Collections.sort(tasks, new TaskComparator());
-		int size = evenout?(int) Math.floor(tasks.size()/(Math.ceil(((double)tasks.size())/listsize))):listsize;
-		for (Task task : tasks	) requeue(task,size);
-		
-		return ;
 	}
-
-	private static void requeue(Task task, int desiredListSize) {
-		if (filter(task.getNamespace(),Tasklists).size() == 0 
-				|| filter(task.getNamespace(),Tasklists).getFirst().getTasks().size() >= desiredListSize) 
-			Tasklists.addFirst(new TaskList(jedis, task.getNamespace()));
-		filter(task.getNamespace(),Tasklists).getFirst().addtask(task);
-		
+	
+	private static void printHelp(Options options) { 
+		HelpFormatter formatter = new HelpFormatter();
+		formatter.printHelp("[-n namespace]", options);
 	}
-	private static LinkedList<TaskList> filter(String namespace,
-			LinkedList<TaskList> tasklists) {
-		LinkedList<TaskList> r = new LinkedList<TaskList>();
-		for (TaskList t : tasklists) {
-			if (t.getNamespace() == namespace) r.addLast(t);
-		}
-		return r;
-	}
-*/
 }

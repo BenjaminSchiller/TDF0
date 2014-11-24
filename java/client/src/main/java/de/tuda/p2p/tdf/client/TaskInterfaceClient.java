@@ -174,6 +174,7 @@ public class TaskInterfaceClient {
 		task.setError(errorMessage);
 		task.setFinished(DateTime.now());
 		
+		dbFactory.addTaskToFailed(task);
 
 		dbFactory.saveTask(task);
 	}

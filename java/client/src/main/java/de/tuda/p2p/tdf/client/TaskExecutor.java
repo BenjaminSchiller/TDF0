@@ -83,9 +83,12 @@ public class TaskExecutor extends Thread {
 		while (true) {
 			//FIXME: if namespaces given, only from those
 			TaskList taskList = null;
-			if(taskInterface.namespaces.isEmpty())
+			if(taskInterface.namespaces.isEmpty()) {
+				Client.logMessage("Waiting on tasks");
 				taskList = dbFactory.getOpenTaskList();
+			}
 			else {
+				Client.logMessage("Waiting on tasks from namespaces " + taskInterface.namespaces);
 				taskList = dbFactory.getOpenTaskList(taskInterface.namespaces);
 			}
 			
