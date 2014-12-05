@@ -76,7 +76,7 @@ public abstract class CMD {
 		File configFile = new File("./", "cmd.properties");
 
 		Properties config = new Properties();
-		System.out.println("Using config file: " + configFile.getCanonicalPath());
+		System.err.println("Using config file: " + configFile.getCanonicalPath());
 		config.load(new FileInputStream(configFile));
 		
 		String hostname = config.getProperty("redis.host");
