@@ -13,7 +13,7 @@
 	<modules>
 		<module>client</module>
 		<module>common</module>
-		<module>logserver</module>
+<!--		<module>logserver</module>-->
 	</modules>
 
 	<build>
