@@ -20,7 +20,6 @@ import org.joda.time.DateTime;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import de.tuda.p2p.tdf.common.ClientTask;
-import de.tuda.p2p.tdf.common.Logger;
 import de.tuda.p2p.tdf.common.databaseObjects.Task;
 import de.tuda.p2p.tdf.common.databaseObjects.TaskList;
 import de.tuda.p2p.tdf.common.redisEngine.DatabaseFactory;
@@ -169,8 +168,8 @@ public class TaskInterfaceClient {
 	public void fail(ClientTask task, String errorMessage) {
 		Client.logError("Task '" + task.getNamespace() + "':'"
 				+ task.getIndex() + "' error: " + errorMessage);
-		Logger.error("Task_Fail,"+clientId+","+task.getNamespace() + ":"
-				+ task.getIndex());
+		//Logger.error("Task_Fail,"+clientId+","+task.getNamespace() + ":"
+		//		+ task.getIndex());
 		task.setError(errorMessage);
 		task.setFinished(DateTime.now());
 		
@@ -191,7 +190,7 @@ public class TaskInterfaceClient {
 	 * @return The task object with filled output, log and error fields
 	 */
 	public ClientTask runTask(ClientTask task) throws TaskException {
-		Logger.log("Task_Start,"+clientId+","+task.getNamespace()+":"+task.getIndex());
+		//Logger.log("Task_Start,"+clientId+","+task.getNamespace()+":"+task.getIndex());
 		if (!executeScript(task, "run.sh"))
 			throw new TaskException("run.sh did not return 0\nhave this stderr:\n\n"+emergencyReadErrorFile(task));
 		

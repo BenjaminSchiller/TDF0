@@ -7,7 +7,6 @@ import java.util.List;
 import org.joda.time.DateTime;
 
 import de.tuda.p2p.tdf.common.ClientTask;
-import de.tuda.p2p.tdf.common.Logger;
 import de.tuda.p2p.tdf.common.databaseObjects.Task;
 import de.tuda.p2p.tdf.common.databaseObjects.TaskList;
 import de.tuda.p2p.tdf.common.redisEngine.DatabaseFactory;
@@ -71,7 +70,7 @@ public class TaskExecutor extends Thread {
 		
 
 		Client.logMessage("Start...");
-		Logger.debug("Client_Init,"+clientId);
+		//Logger.debug("Client_Init,"+clientId);
 	}
 
 	/**
@@ -100,7 +99,7 @@ public class TaskExecutor extends Thread {
 				System.out.println("c");
 
 				Client.logMessage("Execute task '" + clTask.toString() + "'");
-				Logger.debug("Task_Init,"+clientId+","+clTask.getNamespace()+":"+clTask.getIndex());
+				//Logger.debug("Task_Init,"+clientId+","+clTask.getNamespace()+":"+clTask.getIndex());
 
 				// execute task	
 				try {
@@ -116,7 +115,7 @@ public class TaskExecutor extends Thread {
 						throw new TaskException("Setup script did not exit with 0.");
 					}
 					
-					Logger.debug("Task_Success,"+clientId+","+clTask.getNamespace()+":"+clTask.getIndex());
+					//Logger.debug("Task_Success,"+clientId+","+clTask.getNamespace()+":"+clTask.getIndex());
 					
 					// wait some time
 					waitSomeTime(clTask.getWaitAfterSuccess(), waitAfterSuccess);
