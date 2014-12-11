@@ -20,6 +20,13 @@ then
 	exit 1
 fi
 
+which realpath > /dev/null 2>&1
+if [ $? -ne 0 ]
+then
+	echo "realpath is not installed!"
+	exit 1
+fi
+
 export TARGET=${1%/}
 
 mkdir $TARGET/commands
