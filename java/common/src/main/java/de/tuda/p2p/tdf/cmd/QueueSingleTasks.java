@@ -55,9 +55,10 @@ public class QueueSingleTasks extends CMD {
 		
 		Collection<String> tasks = dbFactory.getSingleTasks(namespace).popAllCurrent();
 		
-		TaskList tasklist = dbFactory.generateMultipleTaskLists(tasks, listsize, equally, namespace);
+		Collection<TaskList> tasklists = dbFactory.generateMultipleTaskListsAndQueue(tasks, listsize, equally, true, namespace);
 		
-		say(tasklist.getDBKey());
+		for(TaskList tasklist : tasklists)
+			say(tasklist.getDBKey());
 	
 	}
 }

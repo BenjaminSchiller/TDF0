@@ -32,9 +32,14 @@ public class Requeue extends CMD {
 		
 		Options options = new Options();
 		options.addOption("n", true, "Namespace");
+		options.addOption("k", true, "Size of the lists to generate");
+		options.addOption("e", false, "Try to build equally great list, no sparse last list");
 
 		String namespace = "";
+		Long listsize = 0L;
+		boolean equally = false;
 
+		HelpFormatter formatter = new HelpFormatter();
 		CommandLineParser parser = new PosixParser();
 		CommandLine cmd = null;
 				
@@ -46,25 +51,28 @@ public class Requeue extends CMD {
 			System.exit(-1);
 		}
 		
-		if(cmd.hasOption("n"))
+		if(!cmd.hasOption("k") || !cmd.hasOption("n")) {
+			System.err.println("Missing parameter!");
+			formatter.printHelp("-n namespace -k number [-e]", options);
+			System.exit(-1);
+
+		}
+		else {
 			namespace = cmd.getOptionValue("n");
+			listsize = Long.valueOf(cmd.getOptionValue("k"));
+		}
 		
-		Collection<String> requeued;
+		if(cmd.hasOption("e"))
+			equally = true;
 		
-		if(namespace.isEmpty())
-			requeued = dbFactory.requeue();
-		else
-			requeued = dbFactory.requeue(namespace);
 		
-		for(String key : requeued)
-			System.out.println(key);
+		Collection<TaskList> requeuedTaskLists = dbFactory.requeue(namespace, listsize, equally);
+		
+		for(TaskList tl : requeuedTaskLists)
+			System.out.println(tl.getDBKey());
 		
 		System.exit(0);
 
 	}
 	
-	private static void printHelp(Options options) { 
-		HelpFormatter formatter = new HelpFormatter();
-		formatter.printHelp("[-n namespace]", options);
-	}
 }

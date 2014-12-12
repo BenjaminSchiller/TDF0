@@ -154,16 +154,29 @@ public class DatabaseFactory {
 		return tl;
 	}
 	
-	public TaskList generateTaskListExisting(Collection<String> tasks, String namespace) {
+	public TaskList generateTaskListExistingTasksAndQueue(Collection<String> tasks, String namespace) {
+		TaskList tl = generateTaskListExistingTasks(tasks, namespace);
+		
+		queueTaskList(tl, namespace, true);
+		
+		return tl;
+	}
+	
+	public TaskList generateTaskListExistingTasks(Collection<String> tasks, String namespace) {
 		TaskList tl = new TaskList(jedis, "tdf:" + namespace + ":tasklist:" + this.getTaskListIndexAndIncrement(namespace));
 		
 		for(String t : tasks) {
 			tl.pushTaskKey(t);
 		}
 		
-		jedis.lpush("tdf:" + namespace + ":queueingTaskLists", tl.getDBKey());
-		
 		return tl;
+	}
+	
+	public void queueTaskList(TaskList tl, String namespace, boolean tail) {
+		if(tail)
+			jedis.lpush("tdf:" + namespace + ":queueingTaskLists", tl.getDBKey());
+		else
+			jedis.rpush("tdf:" + namespace + ":queueingTaskLists", tl.getDBKey());
 	}
 	
 	public void addNamespace(String n) {
@@ -269,30 +282,18 @@ public class DatabaseFactory {
 		return dbkey.split(":")[1];
 	}
 	
-	public Collection<String> requeue() {
-		ArrayList<String> requeued = new ArrayList<String>();
-		Set<String> namespaces = this.getAllNamespaces();
+	public Collection<TaskList> requeue(String namespace, Long listsize, boolean equally) {
 		
-		for(String namespace : namespaces) {
-			requeued.addAll(this.requeue(namespace));
-		}
-		
-		return requeued;
-		
-	}
-	
-	public Collection<String> requeue(String namespace) {
+		ArrayList<String> failedTasks = new ArrayList<String>();
 		String taskKey = jedis.lpop("tdf:" + namespace + ":failed");
-		ArrayList<String> requeued = new ArrayList<String>();
 		
 		while(taskKey != null) {
-			TaskList tl = new TaskList(jedis, "tdf:" + namespace + ":tasklist:" + this.getTaskListIndexAndIncrement(namespace));
-			tl.pushTaskKey(taskKey);
-			jedis.rpush("tdf:" + namespace + ":queueingTaskLists", tl.getDBKey());
-			requeued.add(taskKey);
+			failedTasks.add(taskKey);
 			taskKey = jedis.lpop("tdf:" + namespace + ":failed");
+			System.err.println(taskKey);
 		}
-		return requeued;
+		
+		return generateMultipleTaskListsAndQueue(failedTasks, listsize, equally, false, namespace);
 	}
 	
 	/**
@@ -300,9 +301,10 @@ public class DatabaseFactory {
 	 * Taskslists are added to the Queue to be run
 	 * 
 	 * @param tasks database keys that refer to tasks
+	 * @param tail if true, add tasklists to the tail of the queue, else to the head
 	 */
-	public TaskList generateMultipleTaskLists(Collection<String> tasks, Long listsize, boolean equally, String namespace) {
-		TaskList tasklist = null;
+	public Collection<TaskList> generateMultipleTaskListsAndQueue(Collection<String> tasks, Long listsize, boolean equally, boolean tail, String namespace) {
+		LinkedList<TaskList> tasklists = new LinkedList<TaskList>();
 		Integer numOfTasks = tasks.size();
 		
 		Long finalListsize = 0L;
@@ -321,7 +323,10 @@ public class DatabaseFactory {
 				taskl.add(t);
 				numOfTasks--;
 			}
-			tasklist = this.generateTaskListExisting(taskl, namespace);
+			
+			TaskList tl = this.generateTaskListExistingTasksAndQueue(taskl, namespace);
+			this.queueTaskList(tl, namespace, tail);
+			tasklists.add(tl);
 		}
 		
 		List<String> taskl = new LinkedList<String>();
@@ -331,8 +336,11 @@ public class DatabaseFactory {
 			taskl.add(t);
 			numOfTasks--;
 		}
-		tasklist = this.generateTaskListExisting(taskl, namespace);
-
-		return tasklist;
+		
+		TaskList tl = this.generateTaskListExistingTasksAndQueue(taskl, namespace);
+		this.queueTaskList(tl, namespace, tail);
+		tasklists.add(tl);
+		
+		return tasklists;
 	}
 }
