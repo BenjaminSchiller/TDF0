@@ -1,0 +1,409 @@
+\documentclass[a4paper,11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[LGRx,T1]{fontenc}
+%\usepackage{parencite}
+%\usepackage[round]{natbib}
+\usepackage[citestyle=authoryear-ibid,bibstyle=authortitle]{biblatex}
+\usepackage{url}
+%\usepackage[hyperfigures,bookmarks,draft=false,colorlinks=true,urlcolor=blue,parencitecolor=green,linkcolor=red]{hyperref}
+\usepackage{hyperref}
+\usepackage{enumerate}
+\usepackage[english]{babel}
+
+%\usepackage[onehalfspacing]{setspace}
+
+\usepackage{color}
+
+%% graphics
+\usepackage{graphicx}
+%\usepackage[caption=false,font=footnotesize]{subfig}
+
+%% mathematics
+%\usepackage{amsmath}
+
+% Für Sperrsatz \textls
+\usepackage{microtype}
+
+\newcommand{\textgreek}[1]{\begingroup\fontencoding{LGR}\selectfont#1\endgroup}
+
+%% algorithms
+%% when you need floating algorithms use algorithmic combined with figure
+%\usepackage{algorithmic}
+
+%% tools for tables
+%\usepackage{array}
+%\usepackage{tabularx}
+%\usepackage{tabulary}
+%\usepackage{multicol}
+%% end packages
+
+
+%% Change values of topic and student as appropriate
+\title{Introductory Tutorial for the \textit{Task Distribution Framework}
+Fachbereich 20: Informatik, \mbox{TU Darmstadt}}
+\author{Jan-Michael Heller}
+%\date{28. August 2014}
+
+%\let\oldmaketitle\maketitle
+%\renewcommand{\maketitle}{\oldmaketitle aaaaaaaaaaa}
+%% page headers
+%\markboth{\topic}{\topic}
+
+\newcommand{\todo}[1]{ \textbf{\color{red}#1} }
+
+%\addbibresource{literatur.bib}
+
+\begin{document}
+\maketitle
+
+\tableofcontents
+
+\section{Concept}
+The \textit{Task Distribution Framework} is used to define various tasks that are executed by a set of client machines. An example application would be a web crawler which needs multiple machines to crawl websites and uses the framework to automatically distribute the tasks to the clients and receive results.
+
+The main hub of the framework is a \textit{REDIS} database, where all information are stored. A set of commands is provided to add tasks, receive results and perform various maintenance operations. Each client computer runs one (or multiple) clients, that each listen for new tasks. To divide different projects, namespaces are used, so that tasks can be added to a specific namespace. Clients on the other hand can listen to specific namespaces, if assigning ressources to specific machines is wanted. The only communication between clients and the commands is done via the database. Tasks specification and different inputs for the commands are written in \textit{JSON} to achieve a high interoperability.\\
+The executables for tasks are stored on either a webserver or a file ressource accessible by all clients.
+
+\section{Installation}
+\subsection{Compilation and Packaging}
+You should have received a copy of the projects source code. To compile the project, you have to install the build system \textit{maven}.\\
+Compiling the project is then done, by changing into the java directory in the source directory and issuing:
+\begin{verbatim}
+ $ mvn package -Dmaven.test.skip=true
+\end{verbatim}
+If maven fails, you probably need to add additional repositories to your maven configuration. Check the error log for needed packages and look for repositories on the internet to add them.
+
+Now you should check the configurations \texttt{java/common/target/cmd.properties} for the commands and \texttt{java/client/target/client.properties} for the clients and set the database adress accordingly. If you want your clients to listen for specific namespaces only, add them to the variable in the clients properties accordingly.
+
+\section{Usage}
+
+\subsection{Packaging workers\label{sec:workers}}
+To prepare a \textit{worker}, that clients can retreive and run, a standard \textit{zip}-file has to be created.\\
+It needs to contain at least a script called \texttt{setup.sh} and \texttt{run.sh}. The setup script is used to perform additional tasks before the worker is run (such as downloading additional files) and needs to return 0 on success. If the setup completed successfully the run script is run. It also needs to return 0 on success.\\
+Keep in mind, that the same worker, if defined in several tasks is not downloaded again but the same working directory is then used for the new task.
+
+Both scripts are called from the framework with three command line parameters:
+\begin{verbatim}
+ $ {setup.sh, run.sh} [input file] [output file] [temporary directory]
+\end{verbatim}
+
+The \textit{input file} can be opened and contains information passed by the task definition. The \textit{output file} can be used to store information by the script that will be exported to the database after the task has finished. The temporary directory can be used to store files; it is common for all worker instances of the same type.
+
+\texttt{STDOUT} of the worker is used for logging and \texttt{STDERR} can be used for error messages.
+
+\subsection{Adding tasks}
+Before adding tasks, you have to create a namespace. Here we create an exemplatory namespace for our later task:
+\begin{verbatim}
+ $ echo '{"name" : "crawlCat"}' | ./AddNamespace
+\end{verbatim}
+
+TDF provides two different ways of adding tasks. Clients always work with task lists, so you can either directly provide the command \texttt{AddTaskList} with a list of tasks (or a list of a single task) or you add multiple tasks with the \texttt{AddTask} command and combine them into task lists afterwards with the \texttt{QueueSingleTasks} command.
+
+To add a single task, simply call the \texttt{AddTask} command and provide it with a task definition given by the following example JSON:
+\begin{verbatim}
+{
+"namespace": "crawlCat",
+"session": "Students-2021-4-25",
+"worker": "file:///tmp/worker.zip",
+"input": "",
+"timeout": 100000,
+"waitAfterSetupError":100,
+"waitAfterRunError":100,
+"waitAfterSuccess":10,
+"runBefore": "2017-11-24T21:46:48.424+01:00"
+}
+\end{verbatim}
+
+The field \textit{worker} contains the path to the worker. \textit{input} is passed to the run script as \texttt{input.txt} (see \ref{sec:workers}). \textit{timeout} specifies a timeout in milliseconds, after which the process is killed and the task is treated as failed. The field \textit{runBefore} specifies a DateTime after which the task will not be run anymore.\\
+If the task is added successfully, you are provided with the key under which the task is stored.
+
+After you have added a bunch of tasks, you have to call \texttt{QueueSingleTasks} command to combine them into task lists, e.g.:
+\begin{verbatim}
+ $ ./QueueSingleTasks -n crawlCat -k 10 -e
+\end{verbatim}
+Here the parameter \texttt{-n} specifies the namespace, \texttt{-k} the size of the list and \texttt{-e} can be added if you do not want a last list, which may contain much less tasks than the others, but create the lists possibly of equal length as given by a heuristic.\\
+Please remember that if multiple programs work on the same namespace, calling \texttt{QueueSingleTasks} from both of them may cause interferance, because there is only a single list, where newly added single tasks are stored. 
+
+Adding task lists simply works by adding tasks as specified above but combined into a JSON list with the command \texttt{AddTaskList}. You may as well add a list containing a single task to circumvent additional calls of \texttt{QueueSingleTasks} if you only want the clients to process each task seperately.
+
+\subsection{Managing results}
+Issueing the command \texttt{ExportProcessed} will provide you with a list of JSON-tasks that have been processed by the clients. They will contain additional fields like \textit{started} and \textit{finished}, which contain a DateTime, which specify when the task has been started or stopped, \textit{output} which specifies the output the script generated and \textit{error} which contains a non-empty string if something went wrong during execution.
+
+If you want to reschedule tasks, that have failed, you can just call the command \texttt{Requeue} to readd tasks. Those tasks are added as single task lists to the head of the queue of to be executed tasks.
+
+\newpage
+
+\section{Command reference}
+
+\subsection{AddNamespace}
+\begin{verbatim}
+ $ AddNamespace
+\end{verbatim}
+
+\subsubsection{Input}
+Reads a JSON document with the following keys:
+\begin{description}
+\item[name] Name of the namespace do add
+\end{description}
+
+\subsubsection{Description}
+Creates a namespace into which tasks and task lists can be inserted.
+
+\newpage
+
+
+\subsection{AddTask\label{cmd:AddTask}}
+\begin{verbatim}
+ $ AddTask
+\end{verbatim}
+
+\subsubsection{Input}
+A single task definition given by a JSON document like the following:
+\begin{verbatim}
+{
+ "namespace": "crawlCat",
+ "session": "Students-2021-4-25",
+ "worker": "file:///tmp/worker.zip",
+ "input": "",
+ "timeout": 100000,
+ "waitAfterSetupError":100,
+ "waitAfterRunError":100,
+ "waitAfterSuccess":10,
+ "runBefore": "2017-11-24T21:46:48.424+01:00"
+}
+\end{verbatim}
+
+\begin{description}
+\item[namespace] defines the namespace the task is added to
+\item[session] is a session name to recognise the task lateron
+\item[worker] URL (http or filesystem) to the worker package, see section \ref{sec:workers} for information on how to pack a worker
+\item[input] parameters which will be handed to the run script of the worker
+\item[timeout] in \textit{ms} after which the worker is killed
+\item[runBefore] DateTime after which the task becomes invalid and is not run anymore
+\end{description}
+
+\subsubsection{Output}
+Returns the database key of the newly added task.
+
+\subsubsection{Description}
+Adds a single task to the list of unmerged tasks (\textbf{tdf:\textit{namespace}:unmergedTasks}, so it can be collected into a task list by calling \texttt{QueueSingleTasks} lateron (see \ref{cmd:QueueSingleTasks}).\\
+If you simply want the clients to run single tasks, it is most convenient to add task lists with a single entry via \texttt{AddTaskList}, see \ref{cmd:AddTaskList}.
+
+\newpage
+
+
+\subsection{AddTaskList\label{cmd:AddTaskList}}
+\begin{verbatim}
+ $ AddTaskList
+\end{verbatim}
+
+\subsubsection{Input}
+A JSON-List of multiple task definitions, e.g.:
+\begin{verbatim}
+[
+ {
+  "namespace": "crawlCat",
+  "session": "Students-2021-4-25",
+  "worker": "file:///tmp/worker.zip",
+  "input": "arm",
+  "timeout": 100000,
+  "waitAfterSetupError":100,
+  "waitAfterRunError":100,
+  "waitAfterSuccess":10,
+  "runBefore": "2017-11-24T21:46:48.424+01:00"
+ },
+ {
+  "namespace": "crawlCat",
+  "session": "Students-2021-4-26",
+  "worker": "file:///tmp/worker.zip",
+  "input": "belly",
+  "timeout": 100000,
+  "waitAfterSetupError":100,
+  "waitAfterRunError":100,
+  "waitAfterSuccess":10,
+  "runBefore": "2017-11-24T21:46:48.424+01:00"
+ }
+]
+\end{verbatim}
+
+\subsubsection{Output}
+Returns the database key of the newly added task list.
+
+\subsubsection{Description}
+Add a list of tasks to the given namespace. If tasks of the list contain different namespaces, the namespace of the last task is considered.\\
+The task list is directly added to the queue \textbf{tdf:\textit{namespace}:queueingTaskLists} and will be ran, as soon as it hits the tail.
+
+\newpage
+
+
+\subsection{DeleteNamespace\label{cmd:DeleteNamespace}}
+\begin{verbatim}
+ $ DeleteNamespace
+\end{verbatim}
+
+\subsubsection{Input}
+Reads a JSON document with the following keys:
+\begin{description}
+\item[name] Name of the namespace do delete
+\end{description}
+
+\subsubsection{Description}
+Deletes a namespace.
+
+\textbf{Warning!} All tasks in the namespace will be deleted, so be sure to export data you still need before (eg. use \texttt{ExportProcessed}, see \ref{cmd:ExportProcessed})!
+
+\newpage
+
+
+\subsection{DeleteTask\label{cmd:DeleteTask}}
+\begin{verbatim}
+ $ DeleteTask <taskKey>
+\end{verbatim}
+
+\subsubsection{Parameters}
+\begin{description}
+\item[\textit{<taskKey>}] the database key of the task to delete
+\end{description}
+
+\subsubsection{Description}
+Removes task from the list of unmerged tasks. Does not work anymore, if task has been already merged by use of \texttt{QueueSingleTasks} (see \ref{cmd:QueueSingleTasks}).
+
+Has lineary runtime.
+
+\newpage
+
+
+\subsection{DeleteTaskList\label{cmd:DeleteTaskList}}
+\begin{verbatim}
+ $ DeleteTaskList <tasklistKey>
+\end{verbatim}
+
+\subsubsection{Parameters}
+\begin{description}
+\item[\textit{<taskKey>}] the database key of the task list to delete
+\end{description}
+
+\subsubsection{Description}
+Removes task list from the queue of waiting task lists. Only possible until task list is fetched by a client.
+
+Has lineary runtime.
+
+\newpage
+
+
+\subsection{ExportProcessed\label{cmd:ExportProcessed}}
+\begin{verbatim}
+ $ ExportProcessed [-n <namespace>] [-u | -e]
+\end{verbatim}
+
+\subsubsection{Parameters}
+\begin{description}
+\item[-n \textit{<namespace>}] only export processed tasks of a specific namespace
+\item[-u] return every new task only once (useful for batch processing)
+\item[-f] return all failed tasks
+\end{description}
+
+\subsubsection{Output}
+A list of JSON tasks.
+
+A document might look like this:
+
+\begin{verbatim}
+{
+ "input" : "",
+ "waitAfterRunError" : "100",
+ "error" : "run.sh did not return 0\nhave this stderr:\n\n",
+ "client" : ""client-0"",
+ "session" : "Students-2021-4-25",
+ "waitAfterSetupError" : "100",
+ "waitAfterSuccess" : "10",
+ "worker" : "file:///tmp/worker-bashful-1.zip",
+ "finished" : "2014-11-24T21:46:48.424+01:00",
+ "started" : "2014-11-24T21:46:17.201+01:00",
+ "timeout" : "60000",
+ "namespace" : "bashful"
+}
+\end{verbatim}
+
+Compared to the input format (see \ref{cmd:AddTask}) it contains following additional fields:
+\begin{description}
+\item[error] empty if successful, contains error messages otherwise (newlines are replaced with \\n to fit JSON format)
+\item[started] time when job started (DateTime, read from clients local clock)
+\item[finished] time when job finished (DateTime, read from clients local clock)
+\end{description}
+
+
+\subsubsection{Description}
+Export all already processed tasks as a JSON list. Normally contains Tasks of all namespaces but can be limited to a specific namespace by parameter.
+
+If \textbf[-u] is set, newly finished tasks are returned, in a manner, such that tasks are only exported once.
+
+\newpage
+
+\subsection{QueueSingleTasks\label{cmd:QueueSingleTasks}}
+\begin{verbatim}
+ $ QueueSingleTasks -n <namespace> -k <size> [-e]
+\end{verbatim}
+
+\subsubsection{Parameters}
+\begin{description}
+\item[-n \textit{<namespace>}] namespace of which tasks shall be merged
+\item[-k \textit{<size>}] desired list size
+\item[-e] Try to build equally great list, no sparse last list
+\end{description}
+
+\subsubsection{Description}
+Queues tasks that have been added with \texttt{AddTask} to the list of unmerged tasks. If \textbf{-e} is provided, lists with possibly less than the given number, but of equal size will be created, so that the lists are nearly the same size. Without the parameter, lists of \textbf{\textit{<size>}} will be created until less than \textbf{\textit{<size>}} number of tasks are in the list of unmerged tasks, which will then be merged to a smaller list.
+
+
+\newpage
+
+
+\subsection{Requeue\label{cmd:Requeue}}
+\begin{verbatim}
+ $ Requeue -n <namespace> -k <size> [-e]
+\end{verbatim}
+
+\subsubsection{Parameters}
+\begin{description}
+\item[-n \textit{<namespace>}] specific namespace of which tasks shall be requeued
+\item[-k \textit{<size>}] desired list size
+\item[-e] Try to build equally great list, no sparse last list
+\end{description}
+
+\subsubsection{Output}
+Linewise database keys of the requeued tasks.
+
+\subsubsection{Description}
+Requeue failed tasks. The tasks will be splitted to task lists similiar to \texttt{QueueSingleTasks} (see \ref{cmd:QueueSingleTasks}). If no namespace is provided, tasks of all namespaces will be requeued.
+
+\newpage
+
+%\subsection{command\label{cmd:Command}}
+%\begin{verbatim}
+% $ command [-a] [-b <number>]
+%\end{verbatim}
+%
+%\subsubsection{Parameters}
+%\begin{description}
+%\item[-a] Does anything
+%\item[-b \textit{<number>}] Runs <number> times
+%\end{description}
+%
+%\subsubsection{Input}
+%
+%\subsubsection{Description}
+%
+%\newpage
+
+
+%\printbibliography
+
+%\bibliography{14_05_26_rezension}
+%\bibliographystyle{alphadin}
+%\bibliographystyle{plain}
+%\bibliographystyle{plainnat}
+
+
+\end{document}
