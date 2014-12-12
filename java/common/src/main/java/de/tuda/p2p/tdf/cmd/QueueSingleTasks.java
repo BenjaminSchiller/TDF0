@@ -11,6 +11,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 
+import de.tuda.p2p.tdf.common.NamespaceNotExistant;
 import de.tuda.p2p.tdf.common.databaseObjects.TaskList;
 import de.tuda.p2p.tdf.common.redisEngine.DatabaseStringQueue;
 
@@ -53,12 +54,20 @@ public class QueueSingleTasks extends CMD {
 		if(cmd.hasOption("e"))
 			equally = true;
 		
-		Collection<String> tasks = dbFactory.getSingleTasks(namespace).popAllCurrent();
+
 		
-		Collection<TaskList> tasklists = dbFactory.generateMultipleTaskListsAndQueue(tasks, listsize, equally, true, namespace);
-		
-		for(TaskList tasklist : tasklists)
-			say(tasklist.getDBKey());
+		Collection<TaskList> tasklists;
+		try {
+			Collection<String> tasks = dbFactory.getSingleTasks(namespace).popAllCurrent();
+			tasklists = dbFactory.generateMultipleTaskListsAndQueue(tasks, listsize, equally, true, namespace);
+			for(TaskList tasklist : tasklists)
+				say(tasklist.getDBKey());
+			System.exit(0);
+		} catch (NamespaceNotExistant e) {
+			e.printStackTrace();
+			System.err.println("Namespace does not exist!");
+			System.exit(1);
+		}
 	
 	}
 }

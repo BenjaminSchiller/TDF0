@@ -4,6 +4,7 @@ import java.util.Vector;
 
 import argo.jdom.JsonNode;
 import argo.saj.InvalidSyntaxException;
+import de.tuda.p2p.tdf.common.NamespaceNotExistant;
 import de.tuda.p2p.tdf.common.databaseObjects.Task;
 import de.tuda.p2p.tdf.common.databaseObjects.TaskList;
 import de.tuda.p2p.tdf.common.redisEngine.DatabaseFactory;
@@ -38,6 +39,10 @@ public class AddTaskList extends CMD{
 		} catch (InvalidSyntaxException e) {
 			System.err.println("Error Reading Json-Input!");
 			e.printStackTrace();
+		} catch (NamespaceNotExistant e) {
+			e.printStackTrace();
+			System.err.println("Namespace does not exist!");
+			System.exit(1);
 		}
 	}
 

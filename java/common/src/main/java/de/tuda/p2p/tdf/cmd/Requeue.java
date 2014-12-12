@@ -15,6 +15,7 @@ import org.apache.commons.cli.PosixParser;
 
 //import com.sun.xml.internal.ws.api.pipe.NextAction;
 
+import de.tuda.p2p.tdf.common.NamespaceNotExistant;
 import de.tuda.p2p.tdf.common.databaseObjects.Task;
 import de.tuda.p2p.tdf.common.databaseObjects.TaskList;
 
@@ -66,12 +67,21 @@ public class Requeue extends CMD {
 			equally = true;
 		
 		
-		Collection<TaskList> requeuedTaskLists = dbFactory.requeue(namespace, listsize, equally);
-		
-		for(TaskList tl : requeuedTaskLists)
-			System.out.println(tl.getDBKey());
-		
-		System.exit(0);
+		Collection<TaskList> requeuedTaskLists;
+		try {
+			requeuedTaskLists = dbFactory.requeue(namespace, listsize, equally);
+			
+			for(TaskList tl : requeuedTaskLists)
+				System.out.println(tl.getDBKey());
+			
+			System.exit(0);
+			
+		} catch (NamespaceNotExistant e) {
+			e.printStackTrace();
+			System.err.println("Namespace does not exist!");
+			System.exit(1);
+		}
+
 
 	}
 	

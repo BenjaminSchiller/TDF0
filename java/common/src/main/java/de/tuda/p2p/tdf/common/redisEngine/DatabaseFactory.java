@@ -15,6 +15,7 @@ import argo.jdom.JdomParser;
 import argo.jdom.JsonNode;
 import argo.saj.InvalidSyntaxException;
 
+import de.tuda.p2p.tdf.common.NamespaceNotExistant;
 import de.tuda.p2p.tdf.common.databaseObjects.Namespace;
 import de.tuda.p2p.tdf.common.databaseObjects.Task;
 import de.tuda.p2p.tdf.common.databaseObjects.TaskList;
@@ -42,14 +43,18 @@ public class DatabaseFactory {
 			jedis.auth(password);
 	}
 	
-	public String addSingleTask(Task t) {
+	public String addSingleTask(Task t) throws NamespaceNotExistant {
 		String key = "tdf:" + t.getNamespace() + ":task:" + this.getTaskIndexAndIncrement(t.getNamespace());
+		if(!namespaceExists(t.getNamespace()))
+			throw new NamespaceNotExistant();
 		t.saveToDB(jedis, key);
 		jedis.lpush("tdf:" + t.getNamespace() + ":unmergedTasks", key);
 		return key;
 	}
 	
-	public DatabaseStringQueue getSingleTasks(String namespace) {
+	public DatabaseStringQueue getSingleTasks(String namespace) throws NamespaceNotExistant {
+		if(!namespaceExists(namespace))
+			throw new NamespaceNotExistant();
 		return new DatabaseStringQueue(jedis, "tdf:" + namespace + ":unmergedTasks");
 	}
 	
@@ -139,8 +144,11 @@ public class DatabaseFactory {
 	
 	/**
 	 * TaskList is saved automatically at the moment
+	 * @throws NamespaceNotExistant 
 	 */
-	public TaskList generateTaskList(Collection<Task> tasks, String namespace) {
+	public TaskList generateTaskList(Collection<Task> tasks, String namespace) throws NamespaceNotExistant {
+		if(!namespaceExists(namespace))
+			throw new NamespaceNotExistant();
 		TaskList tl = new TaskList(jedis, "tdf:" + namespace + ":tasklist:" + this.getTaskListIndexAndIncrement(namespace));
 		
 		for(Task t : tasks) {
@@ -154,7 +162,7 @@ public class DatabaseFactory {
 		return tl;
 	}
 	
-	public TaskList generateTaskListExistingTasksAndQueue(Collection<String> tasks, String namespace) {
+	public TaskList generateTaskListExistingTasksAndQueue(Collection<String> tasks, String namespace) throws NamespaceNotExistant {
 		TaskList tl = generateTaskListExistingTasks(tasks, namespace);
 		
 		queueTaskList(tl, namespace, true);
@@ -162,7 +170,9 @@ public class DatabaseFactory {
 		return tl;
 	}
 	
-	public TaskList generateTaskListExistingTasks(Collection<String> tasks, String namespace) {
+	public TaskList generateTaskListExistingTasks(Collection<String> tasks, String namespace) throws NamespaceNotExistant {
+		if(!namespaceExists(namespace))
+			throw new NamespaceNotExistant();
 		TaskList tl = new TaskList(jedis, "tdf:" + namespace + ":tasklist:" + this.getTaskListIndexAndIncrement(namespace));
 		
 		for(String t : tasks) {
@@ -282,7 +292,7 @@ public class DatabaseFactory {
 		return dbkey.split(":")[1];
 	}
 	
-	public Collection<TaskList> requeue(String namespace, Long listsize, boolean equally) {
+	public Collection<TaskList> requeue(String namespace, Long listsize, boolean equally) throws NamespaceNotExistant {
 		
 		ArrayList<String> failedTasks = new ArrayList<String>();
 		String taskKey = jedis.lpop("tdf:" + namespace + ":failed");
@@ -302,8 +312,9 @@ public class DatabaseFactory {
 	 * 
 	 * @param tasks database keys that refer to tasks
 	 * @param tail if true, add tasklists to the tail of the queue, else to the head
+	 * @throws NamespaceNotExistant 
 	 */
-	public Collection<TaskList> generateMultipleTaskListsAndQueue(Collection<String> tasks, Long listsize, boolean equally, boolean tail, String namespace) {
+	public Collection<TaskList> generateMultipleTaskListsAndQueue(Collection<String> tasks, Long listsize, boolean equally, boolean tail, String namespace) throws NamespaceNotExistant {
 		LinkedList<TaskList> tasklists = new LinkedList<TaskList>();
 		Integer numOfTasks = tasks.size();
 		
