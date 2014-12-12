@@ -37,16 +37,16 @@ public abstract class CMD {
              dbFactory = loadConfig();
         }
         catch (FileNotFoundException e) {
-			System.out.println("Could not find config file 'cmd.properties'.");
+			System.err.println("Could not find config file 'cmd.properties'.");
 			System.exit(29);
 		} catch (URISyntaxException e) {
-			System.out.println("Error while loading config file.");
+			System.err.println("Error while loading config file.");
 			System.exit(29);
 		} catch (IOException e) {
-			System.out.println("Error while reading config file.");
+			System.err.println("Error while reading config file.");
 			System.exit(29);
 		} catch (ConfigurationException e) {
-			System.out.println(e.getMessage());
+			System.err.println(e.getMessage());
 			System.exit(29);
 		} /*catch (JedisConnectionException e) {
 			System.out.println("Error while connecting to Redis: " + e.getMessage());
@@ -100,7 +100,7 @@ public abstract class CMD {
 			jn=json.parse(s.replaceAll(System.lineSeparator(),"").replaceAll("\t",""));
 		} catch (InvalidSyntaxException e) {
 			err(e.getMessage());
-			return null;	
+			return null
 		}
 		return jn;
 	}*/

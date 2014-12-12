@@ -50,6 +50,6 @@ do
 	sed -i "s/client.id = .*/client.id = \"client-${clientnum}\"/g" $TARGET/client${clientnum}/client.properties
 done
 
-mkdir $TARGET/logserver
+#mkdir $TARGET/logserver
 
-cp java/logserver/target/tdf-logserver.jar $TARGET/logserver/
+#cp java/logserver/target/tdf-logserver.jar $TARGET/logserver/

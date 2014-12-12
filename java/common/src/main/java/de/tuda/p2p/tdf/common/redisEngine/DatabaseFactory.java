@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -292,5 +293,46 @@ public class DatabaseFactory {
 			taskKey = jedis.lpop("tdf:" + namespace + ":failed");
 		}
 		return requeued;
+	}
+	
+	/**
+	 * Generate multiple Task lists from a list of Database keys that refer to tasks
+	 * Taskslists are added to the Queue to be run
+	 * 
+	 * @param tasks database keys that refer to tasks
+	 */
+	public TaskList generateMultipleTaskLists(Collection<String> tasks, Long listsize, boolean equally, String namespace) {
+		TaskList tasklist = null;
+		Integer numOfTasks = tasks.size();
+		
+		Long finalListsize = 0L;
+		
+		if(equally)
+			finalListsize = (long) Math.ceil(numOfTasks / listsize);
+		else
+			finalListsize = listsize;
+		
+		Iterator<String> iter = tasks.iterator();
+		
+		while(numOfTasks > finalListsize) {
+			List<String> taskl = new LinkedList<String>();
+			for(int i = 0; i < finalListsize; i++) {
+				String t = iter.next();
+				taskl.add(t);
+				numOfTasks--;
+			}
+			tasklist = this.generateTaskListExisting(taskl, namespace);
+		}
+		
+		List<String> taskl = new LinkedList<String>();
+		while(numOfTasks !=0)
+		{
+			String t = iter.next();
+			taskl.add(t);
+			numOfTasks--;
+		}
+		tasklist = this.generateTaskListExisting(taskl, namespace);
+
+		return tasklist;
 	}
 }

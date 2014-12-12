@@ -53,36 +53,11 @@ public class QueueSingleTasks extends CMD {
 		if(cmd.hasOption("e"))
 			equally = true;
 		
-		Collection<String> tasks = dbFactory.getSingleTasks(namespace).getAllCurrent();
-		Integer tasksize = tasks.size();
+		Collection<String> tasks = dbFactory.getSingleTasks(namespace).popAllCurrent();
 		
-		TaskList tasklist = null;
+		TaskList tasklist = dbFactory.generateMultipleTaskLists(tasks, listsize, equally, namespace);
 		
-		if(!equally) {
-			Iterator<String> iter = tasks.iterator();
-			while(tasksize > listsize) {
-				List<String> taskl = new LinkedList<String>();
-				for(int i = 0; i < listsize; i++) {
-					String t = iter.next();
-					taskl.add(t);
-					tasksize--;
-				}
-				tasklist = dbFactory.generateTaskListExisting(taskl, namespace);
-				say(tasklist.getDBKey());
-			}
-			
-			List<String> taskl = new LinkedList<String>();
-			while(tasksize !=0)
-			{
-				String t = iter.next();
-				taskl.add(t);
-				tasksize--;
-			}
-			tasklist = dbFactory.generateTaskListExisting(taskl, namespace);
-			say(tasklist.getDBKey());
-		}
-		else {
-			
-		}
+		say(tasklist.getDBKey());
+	
 	}
 }

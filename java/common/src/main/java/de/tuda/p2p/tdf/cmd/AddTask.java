@@ -8,8 +8,7 @@ public class AddTask extends CMD{
 	
 	public static void main(String[] args){
 		init();
-		say(Settings.toString());
-	
+		
 		try {
 			Task t = new Task();
 			t.loadFromJson(getInput(args));
