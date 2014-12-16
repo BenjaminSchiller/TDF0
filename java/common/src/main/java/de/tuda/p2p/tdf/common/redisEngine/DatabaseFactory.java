@@ -15,6 +15,7 @@ import argo.jdom.JdomParser;
 import argo.jdom.JsonNode;
 import argo.saj.InvalidSyntaxException;
 
+import de.tuda.p2p.tdf.common.InvalidDatabaseKey;
 import de.tuda.p2p.tdf.common.NamespaceNotExistant;
 import de.tuda.p2p.tdf.common.databaseObjects.Namespace;
 import de.tuda.p2p.tdf.common.databaseObjects.Task;
@@ -68,14 +69,14 @@ public class DatabaseFactory {
 	
 	public void addProcessedTask(Task t) {
 		t.saveToDB(jedis, t.getDbKey());
-		jedis.sadd("tdf:" + t.getNamespace() + ":processed", t.getDbKey());
+		jedis.lpush("tdf:" + t.getNamespace() + ":processed", t.getDbKey());
 		jedis.lpush("tdf:" + t.getNamespace() + ":newlyProcessed", t.getDbKey());
 	}
 	
 	public Collection<Task> getProcessedTasks(String namespace) {
 		Set<Task> tl = new HashSet<Task>();
 		
-		for(String dbKey : jedis.smembers("tdf:" + namespace + ":processed")) {
+		for(String dbKey : jedis.lrange("tdf:" + namespace + ":processed", 0, -1)) {
 			Task t = new Task();
 			t.loadFromDB(jedis, dbKey);
 			tl.add(t);
@@ -335,7 +336,7 @@ public class DatabaseFactory {
 				numOfTasks--;
 			}
 			
-			TaskList tl = this.generateTaskListExistingTasksAndQueue(taskl, namespace);
+			TaskList tl = this.generateTaskListExistingTasks(taskl, namespace);
 			this.queueTaskList(tl, namespace, tail);
 			tasklists.add(tl);
 		}
@@ -348,10 +349,59 @@ public class DatabaseFactory {
 			numOfTasks--;
 		}
 		
-		TaskList tl = this.generateTaskListExistingTasksAndQueue(taskl, namespace);
+		TaskList tl = this.generateTaskListExistingTasks(taskl, namespace);
 		this.queueTaskList(tl, namespace, tail);
 		tasklists.add(tl);
 		
 		return tasklists;
+	}
+	
+	public String showDatabaseEntry(String key) throws InvalidDatabaseKey, NamespaceNotExistant {
+		
+		String[] dbPath = key.split(":");
+		
+		StringBuilder output = new StringBuilder();
+		
+		if(dbPath.length < 3 || !dbPath[0].equals("tdf"))
+			throw new InvalidDatabaseKey();
+		
+		if(!namespaceExists(dbPath[1]))
+			throw new NamespaceNotExistant();
+		
+		switch(dbPath[2]) {
+			case "tasklist":	
+			case "unmergedTasks":
+			case "failed":
+			case "processed":
+			case "queueingTaskLists":
+			case "newlyProcessed":
+				DatabaseStringQueue queue = new DatabaseStringQueue(jedis, key);
+				boolean first = true;
+				for(String item : queue.showQueue()) {
+					if(first)
+						first = false;
+					else
+						output.append(System.getProperty("line.separator"));
+					output.append(item);
+				}
+				break;
+				
+			case "task":
+				if(dbPath.length != 4)
+					throw new InvalidDatabaseKey();
+				Task task = new Task();
+				task.loadFromDB(jedis, key);
+				
+				output.append(task.toJson());
+				
+				break;
+				
+			default:
+				throw new InvalidDatabaseKey();
+			
+		}
+		
+		return output.toString();
+		
 	}
 }
