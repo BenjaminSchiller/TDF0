@@ -23,6 +23,7 @@ public class QueueSingleTasks extends CMD {
 		options.addOption("n", true, "Namespace");
 		options.addOption("k", true, "Size of the lists to generate");
 		options.addOption("e", false, "Try to build equally great list, no sparse last list");
+		options.addOption("h", false, "Show help");
 		
 		String namespace = "";
 		Long listsize = 0L;
@@ -40,9 +41,9 @@ public class QueueSingleTasks extends CMD {
 			System.exit(-1);
 		}
 		
-		if(!cmd.hasOption("k") || !cmd.hasOption("n")) {
+		if(!cmd.hasOption("k") || !cmd.hasOption("n") || cmd.hasOption("h")) {
 			System.err.println("Missing parameter!");
-			formatter.printHelp("-n namespace -k number [-e]", options);
+			formatter.printHelp("-n <namespace> -k <number> [-e]", options);
 			System.exit(-1);
 
 		}

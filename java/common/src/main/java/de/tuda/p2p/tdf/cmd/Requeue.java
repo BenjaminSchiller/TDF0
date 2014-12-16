@@ -54,7 +54,7 @@ public class Requeue extends CMD {
 		
 		if(!cmd.hasOption("k") || !cmd.hasOption("n")) {
 			System.err.println("Missing parameter!");
-			formatter.printHelp("-n namespace -k number [-e]", options);
+			formatter.printHelp("-n <namespace> -k <number> [-e]", options);
 			System.exit(-1);
 
 		}

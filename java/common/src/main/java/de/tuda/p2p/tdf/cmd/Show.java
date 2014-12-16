@@ -39,7 +39,6 @@ public class Show extends CMD {
 	}
 	
 	private static void showHelp(String[] args) {
-		System.out.println("usage:");
-		System.out.println("$ ./Show databaseKey");
+		System.out.println("usage: <database key>");
 	}
 }

@@ -23,6 +23,8 @@ public class ExportProcessed extends CMD{
 		options.addOption("n", true, "Namespace");
 		options.addOption("u", false, "Only newly processed tasks");
 		options.addOption("f", false, "List failed tasks");
+		options.addOption("h", false, "Show help");
+
 
 		String namespace = "";
 
@@ -86,6 +88,6 @@ public class ExportProcessed extends CMD{
 	
 	private static void printHelp(Options options) { 
 		HelpFormatter formatter = new HelpFormatter();
-		formatter.printHelp("[-n namespace] [-u | -f]", options);
+		formatter.printHelp("[-n <namespace>] [-u | -f]", options);
 	}
 }
