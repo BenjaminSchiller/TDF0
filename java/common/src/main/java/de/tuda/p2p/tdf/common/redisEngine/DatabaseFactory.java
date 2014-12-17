@@ -67,6 +67,12 @@ public class DatabaseFactory {
 		jedis.sadd("tdf:" + t.getNamespace() + ":completed", t.getDbKey());
 	}
 	
+	public void addSuccessfulTask(Task t) {
+		t.saveToDB(jedis, t.getDbKey());
+		jedis.lpush("tdf:" + t.getNamespace() + ":successful", t.getDbKey());
+		jedis.lpush("tdf:" + t.getNamespace() + ":newlySuccessful", t.getDbKey());
+	}
+	
 	public void addProcessedTask(Task t) {
 		t.saveToDB(jedis, t.getDbKey());
 		jedis.lpush("tdf:" + t.getNamespace() + ":processed", t.getDbKey());

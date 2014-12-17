@@ -119,6 +119,8 @@ public class TaskExecutor extends Thread {
 					
 					// wait some time
 					waitSomeTime(clTask.getWaitAfterSuccess(), waitAfterSuccess);
+					
+					dbFactory.addSuccessfulTask(clTask);
 				}
 				catch (TaskException e) {
 					taskInterface.fail(clTask, e.getMessage());

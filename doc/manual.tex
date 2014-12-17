@@ -57,13 +57,18 @@ Fachbereich 20: Informatik, \mbox{TU Darmstadt}}
 \begin{document}
 \maketitle
 
+\setcounter{tocdepth}{2}
 \tableofcontents
+
+\newpage
 
 \section{Concept}
 The \textit{Task Distribution Framework} is used to define various tasks that are executed by a set of client machines. An example application would be a web crawler which needs multiple machines to crawl websites and uses the framework to automatically distribute the tasks to the clients and receive results.
 
 The main hub of the framework is a \textit{REDIS} database, where all information are stored. A set of commands is provided to add tasks, receive results and perform various maintenance operations. Each client computer runs one (or multiple) clients, that each listen for new tasks. To divide different projects, namespaces are used, so that tasks can be added to a specific namespace. Clients on the other hand can listen to specific namespaces, if assigning ressources to specific machines is wanted. The only communication between clients and the commands is done via the database. Tasks specification and different inputs for the commands are written in \textit{JSON} to achieve a high interoperability.\\
 The executables for tasks are stored on either a webserver or a file ressource accessible by all clients.
+
+\newpage
 
 \section{Installation}
 \subsection{Compilation and Packaging}
@@ -75,6 +80,8 @@ Compiling the project is then done, by changing into the java directory in the s
 If maven fails, you probably need to add additional repositories to your maven configuration. Check the error log for needed packages and look for repositories on the internet to add them.
 
 Now you should check the configurations \texttt{java/common/target/cmd.properties} for the commands and \texttt{java/client/target/client.properties} for the clients and set the database adress accordingly. If you want your clients to listen for specific namespaces only, add them to the variable in the clients properties accordingly.
+
+\newpage
 
 \section{Usage}
 
@@ -131,6 +138,26 @@ Adding task lists simply works by adding tasks as specified above but combined i
 Issueing the command \texttt{ExportProcessed} will provide you with a list of JSON-tasks that have been processed by the clients. They will contain additional fields like \textit{started} and \textit{finished}, which contain a DateTime, which specify when the task has been started or stopped, \textit{output} which specifies the output the script generated and \textit{error} which contains a non-empty string if something went wrong during execution.
 
 If you want to reschedule tasks, that have failed, you can just call the command \texttt{Requeue} to readd tasks. Those tasks are added as single task lists to the head of the queue of to be executed tasks.
+
+\newpage
+
+\section{Documentation}
+\subsection{Queues\label{sec:queues}}
+Each namespace has a node in the imaginary REDIS tree, eg. for an exemplatory namespace called \textit{namespace}: \texttt{tdf:namespace}. Under this node all data belonging to the namespace are stored. This regards the tasks and task lists as well as queues, in wich the same are assorted, which will be described here. The queues are all generated as lists and contain keys of the corresponding tasks or task lists. Normally new items are added on the left, which represents the tail of the list and the oldest item is on the right side (the head). This way the lists are often used as queues, s.t. tasks and task lists are processed in a FIFO order. The only exception are task lists which are generated out of failed tasks by the command \texttt{Requeue} (see \ref{cmd:Requeue}), which are added to the head of the list \texttt{queueingTaskLists}.
+
+The queues are all assorted under the namespaces node, for example \texttt{tdf:namespace:queueingTaskLists}.
+
+\subsubsection{Description of queues}
+\begin{description}
+\item[\texttt{failed}] This queue contains the database key of all tasks, that have failed in the order of which they have been added.
+\item[\texttt{newlyProcessed}] This lists contains the database key of tasks that have been processed (successful and unsuccessful) and is flushed each time the command \texttt{ExportProcessed} is called with parameter \textbf{-u} (see \ref{cmd:ExportProcessed}).
+\item[\texttt{newlySuccessful}] The same as \texttt{newlyProcessed} but only for successfully ran tasks.
+\item[\texttt{processed}] This list contains the database key of all tasks which have been already processed by a client.
+\item[\texttt{queueingTaskLists}] In this queue the database keys of all task lists which are ready to be run are queued.
+\item[\texttt{successful}] This list contains all successfully worked off tasks.
+\item[\texttt{unmergedTasks}] This queue is used to collect single tasks, which have been added by \texttt{AddTask} (see \ref{cmd:AddTask}), to combine them into task lists lateron by calling \texttt{QueueSingleTasks} (see \ref{cmd:QueueSingleTasks}).
+\end{description}
+
 
 \newpage
 
@@ -378,10 +405,18 @@ Linewise database keys of the requeued tasks.
 \subsubsection{Description}
 Requeue failed tasks. The tasks will be splitted to task lists similiar to \texttt{QueueSingleTasks} (see \ref{cmd:QueueSingleTasks}). If no namespace is provided, tasks of all namespaces will be requeued.
 
+\newpage
+
 \subsection{Show\label{cmd:Show}}
 \begin{verbatim}
  $ Show <database key>
 \end{verbatim}
+
+\subsubsection{Output}
+The content of the requested database key. Is either a line-by-line list (most likely of database keys) or a JSON document, representing the contained hashset.
+
+\subsubsection{Description}
+Can be used to view content of certain database keys. It is for example useful, to view generated task lists after creation with eg. \texttt{QueueSingleTasks} or to view different queues (see for example \ref{sec:queues}).
 
 
 \newpage
