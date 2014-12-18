@@ -112,6 +112,25 @@ public class DatabaseFactory {
 			dbKey = jedis.rpop("tdf:" + namespace + ":newlyProcessed");
 		}
 		
+		jedis.del("tdf:" + namespace + ":newlySuccessful");
+		
+		return tl;
+	}
+	
+	public Collection<Task> getNewlySuccessfulTasks(String namespace) {
+		Set<Task> tl = new HashSet<Task>();
+		
+		String dbKey = jedis.rpop("tdf:" + namespace + ":newlySuccessful");
+		
+		while(dbKey != null) { 
+			Task t = new Task();
+			t.loadFromDB(jedis, dbKey);
+			tl.add(t);
+			dbKey = jedis.rpop("tdf:" + namespace + ":newlySuccessful");
+		}
+		
+		jedis.del("tdf:" + namespace + ":newlyProcessed");
+		
 		return tl;
 	}
 	
@@ -120,6 +139,15 @@ public class DatabaseFactory {
 		
 		for(String namespace : this.getAllNamespaces()) {
 			tl.addAll(this.getNewlyProcessedTasks(namespace));
+		}
+		return tl;
+	}
+	
+	public Collection<Task> getNewlySuccessfulTasks() {
+		Set<Task> tl = new HashSet<Task>();
+		
+		for(String namespace : this.getAllNamespaces()) {
+			tl.addAll(this.getNewlySuccessfulTasks(namespace));
 		}
 		return tl;
 	}
@@ -220,9 +248,11 @@ public class DatabaseFactory {
 		
 		jedis.lrem("tdf:" + namespace + ":unmergedTasks", 0, dbkey);
 		jedis.lrem("tdf:" + namespace + ":failed", 0, dbkey);
-		jedis.srem("tdf:" + namespace + ":processed", dbkey);
+		jedis.lrem("tdf:" + namespace + ":processed", 0, dbkey);
+		jedis.lrem("tdf:" + namespace + ":successful", 0, dbkey);
 		jedis.lrem("tdf:" + namespace + ":newlyProcessed", 0, dbkey);
-		
+		jedis.lrem("tdf:" + namespace + ":newlySuccessful", 0, dbkey);
+
 		if(jedis.del(dbkey) == 1)
 			return true;
 		else

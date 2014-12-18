@@ -22,6 +22,7 @@ public class ExportProcessed extends CMD{
 		Options options = new Options();
 		options.addOption("n", true, "Namespace");
 		options.addOption("u", false, "Only newly processed tasks");
+		options.addOption("s", false, "Only newly processed tasks which have been successful");
 		options.addOption("f", false, "List failed tasks");
 		options.addOption("h", false, "Show help");
 
@@ -42,8 +43,10 @@ public class ExportProcessed extends CMD{
 		if(cmd.hasOption("n"))
 			namespace = cmd.getOptionValue("n");
 		
-		if(cmd.hasOption("u") && cmd.hasOption("f")) {
-			System.out.println("Only -u or -f as parameter!");
+		if(cmd.hasOption("u") && cmd.hasOption("f") || 
+				cmd.hasOption("u") && cmd.hasOption("s") ||
+				cmd.hasOption("s") && cmd.hasOption("f")) {
+			System.out.println("Only -u, -f or -s as parameter!");
 			ExportProcessed.printHelp(options);
 			System.exit(1);
 		}
@@ -61,6 +64,12 @@ public class ExportProcessed extends CMD{
 				tl = dbFactory.getFailedTasks();
 			else
 				tl = dbFactory.getFailedTasks(namespace);
+		}
+		else if(cmd.hasOption("s")) {
+			if(namespace.isEmpty())
+				tl = dbFactory.getNewlySuccessfulTasks();
+			else
+				tl = dbFactory.getNewlySuccessfulTasks(namespace);
 		}
 		else {
 			if(namespace.isEmpty())

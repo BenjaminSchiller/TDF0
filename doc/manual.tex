@@ -321,7 +321,7 @@ Has lineary runtime.
 
 \subsection{ExportProcessed\label{cmd:ExportProcessed}}
 \begin{verbatim}
- $ ExportProcessed [-n <namespace>] [-u | -f]
+ $ ExportProcessed [-n <namespace>] [[-u | -f | -s] [-r]]
 \end{verbatim}
 
 \subsubsection{Parameters}
@@ -329,6 +329,7 @@ Has lineary runtime.
 \item[-n \textit{<namespace>}] only export processed tasks of a specific namespace
 \item[-u] return every new task only once (useful for batch processing)
 \item[-f] return all failed tasks
+\item[-s] return new tasks only once and only show successful tasks
 \end{description}
 
 \subsubsection{Output}
@@ -364,7 +365,9 @@ Compared to the input format (see \ref{cmd:AddTask}) it contains following addit
 \subsubsection{Description}
 Export all already processed tasks as a JSON list. Normally contains Tasks of all namespaces but can be limited to a specific namespace by parameter.
 
-If \textbf[-u] is set, newly finished tasks are returned, in a manner, such that tasks are only exported once.
+If \textbf[-u] or \textbf[-s] is set, newly finished tasks are returned, in a manner, such that tasks are only exported once. At best only use one of these options, as the lists for these options are both flushed after calling the command with one of the parameters them.
+
+To keep space in the database it is generally a good idea to call \texttt{DeleteTask} after tasks are not needed anymore (see \ref{cmd:DeleteTask}).
 
 \newpage
 
