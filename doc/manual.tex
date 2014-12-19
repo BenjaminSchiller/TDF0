@@ -359,6 +359,7 @@ Compared to the input format (see \ref{cmd:AddTask}) it contains following addit
 \item[error] empty if successful, contains error messages otherwise (newlines are replaced with \\n to fit JSON format)
 \item[started] time when job started (DateTime, read from clients local clock)
 \item[finished] time when job finished (DateTime, read from clients local clock)
+\item[client] is the client which last worked on the task (interally also important for timeout handling)
 \end{description}
 
 
@@ -423,6 +424,17 @@ Can be used to view content of certain database keys. It is for example useful, 
 
 
 \newpage
+
+\subsection{Timeout\label{cmd:timeout}}
+\begin{verbatim}
+ $ Timeout -n <namespace>
+\end{verbatim}
+
+\subsubsection{Output}
+Line-by-line list of tasks which have been marked as failed because client took too long.
+
+\subsubsection{Description}
+\textbf{WARNING:} To use this command, you need meaningful synchronised clocks between the server and all clients. Elsewise behaviour of this command can become odd.
 
 %\subsection{command\label{cmd:Command}}
 %\begin{verbatim}

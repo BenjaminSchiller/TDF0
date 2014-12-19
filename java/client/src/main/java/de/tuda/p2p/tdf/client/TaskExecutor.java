@@ -92,12 +92,11 @@ public class TaskExecutor extends Thread {
 			}
 			
 			for(ClientTask clTask : taskList.getClientTasks()){
-						
-				System.out.println("b");
-				
+										
 				clTask.start(clientId);
-				System.out.println("c");
-
+				//Save task here, so we can identify the last client that worked on it (e.g. for timeout detection)
+				dbFactory.saveTask(clTask);
+				
 				Client.logMessage("Execute task '" + clTask.toString() + "'");
 				//Logger.debug("Task_Init,"+clientId+","+clTask.getNamespace()+":"+clTask.getIndex());
 
@@ -120,21 +119,33 @@ public class TaskExecutor extends Thread {
 					// wait some time
 					waitSomeTime(clTask.getWaitAfterSuccess(), waitAfterSuccess);
 					
-					dbFactory.addSuccessfulTask(clTask);
+					if(dbFactory.doesTaskStillBelongToClient(clientId, clTask))
+						dbFactory.addSuccessfulTask(clTask);
+					else 
+						break;
 				}
 				catch (TaskException e) {
-					taskInterface.fail(clTask, e.getMessage());
-
+					if(dbFactory.doesTaskStillBelongToClient(clientId, clTask))
+						taskInterface.fail(clTask, e.getMessage());
+					else 
+						break;
 					// wait some time
 					waitSomeTime(clTask.getWaitAfterRunError(), waitAfterRunError);
 				} catch (SetupException e) {
-					taskInterface.fail(clTask, e.getMessage());
-
+					if(dbFactory.doesTaskStillBelongToClient(clientId, clTask))
+						taskInterface.fail(clTask, e.getMessage());	
+					else 
+						break;
 					// wait some time
 					waitSomeTime(clTask.getWaitAfterSetupError(), waitAfterSetupError);
 				}
-				dbFactory.addProcessedTask(clTask);
+				if(dbFactory.doesTaskStillBelongToClient(clientId, clTask))
+					dbFactory.addProcessedTask(clTask);
+				else 
+					break;
 			}
+			
+			taskList.flush();
 			
 		}
 	}

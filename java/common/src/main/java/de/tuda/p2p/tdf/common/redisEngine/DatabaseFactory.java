@@ -440,4 +440,47 @@ public class DatabaseFactory {
 		return output.toString();
 		
 	}
+	
+	/**
+	 * Log client side messages
+	 * @param client name of the client as given in configuration
+	 * @param message log message
+	 */
+	public void log(String client, String message) {
+		jedis.lpush("tdf:log:" + client, message);
+	}
+	
+	/**
+	 * Get next log message from any client
+	 * @return
+	 */
+	public String getNextLogMessage() {
+		return getNextLogMessage(jedis.keys("tdf:log:*").toArray(new String[0]));
+	}
+	
+	/**
+	 * Get next log message of a specific client
+	 * @param client name of the client as given in configuration
+	 * @return
+	 */
+	public String getNextLogMessage(String client) {
+		return getNextLogMessage("tdf:log:" + client);
+	}
+	
+	/**
+	 * Get next log message of multiple specific clients
+	 * @param client name of the client as given in configuration
+	 * @return
+	 */
+	private String getNextLogMessage(String... clients) {
+		return jedis.brpop(0, clients).get(1);
+	}
+
+	public boolean doesTaskStillBelongToClient(String client, Task t) {
+		Task tn = new Task();
+		
+		tn.loadFromDB(jedis, t.getDbKey());
+		
+		return tn.getField("client").equals(client);
+	}
 }

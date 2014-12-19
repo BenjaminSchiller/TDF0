@@ -41,4 +41,8 @@ public class DatabaseStringQueue {
 	public List<String> showQueue() {
 		return jedis.lrange(dbKey, 0, -1);
 	}
+	
+	public void flush() {
+		jedis.del(dbKey);
+	}
 }
