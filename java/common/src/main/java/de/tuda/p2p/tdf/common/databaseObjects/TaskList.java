@@ -22,7 +22,7 @@ public class TaskList extends DatabaseStringQueue{
 	public TaskList(Jedis jedis, String dbKey) {
 		super(jedis, dbKey);
 		config = new TaskListMetainformation();
-		config.setDbKey(dbKey + ":meta");
+		config.loadFromDB(jedis, dbKey + ":meta");
 	}
 	
 	public void start() {

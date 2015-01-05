@@ -175,6 +175,14 @@
 					    <dst>${basedir}/target/AddNamespace</dst>
 					    <src>${basedir}/target/commands.sh</src>
 					</link>
+					<link>
+					    <dst>${basedir}/target/Show</dst>
+					    <src>${basedir}/target/commands.sh</src>
+					</link>
+					<link>
+					    <dst>${basedir}/target/Timeout</dst>
+					    <src>${basedir}/target/commands.sh</src>
+					</link>
 				    </links>
 
 				</configuration>

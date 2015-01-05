@@ -85,12 +85,17 @@ public class TaskExecutor extends Thread {
 	public void run() {
 		DateTime start = DateTime.now();
 		log(LogMessageType.CLIENT_STARTED, "");
-		waitingOnTasks = true;
-		
+				
 		while (running) {
 			//FIXME: if namespaces given, only from those
 			TaskList taskList = null;
-			if(taskInterface.namespaces.isEmpty()) {
+			waitingOnTasks = true;
+			
+			if(dbFactory.getAllNamespaces().isEmpty()) { 
+				System.out.println("No namespaces available!");
+				running = false;
+			}
+			else if(taskInterface.namespaces.isEmpty()) {
 				Client.logMessage("Waiting on tasks");
 				taskList = dbFactory.getOpenTaskList();
 			}

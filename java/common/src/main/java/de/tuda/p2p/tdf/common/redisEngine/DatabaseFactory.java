@@ -306,6 +306,22 @@ public class DatabaseFactory {
 		return new TaskList(jedis, jedis.brpop(0, queues.toArray(new String[0])).get(1));
 	}
 	
+	public Collection<TaskList> getTimedoutTaskLists(String namespace) throws NamespaceNotExistant {
+		if(!namespaceExists(namespace))
+			throw new NamespaceNotExistant();
+		
+		LinkedList<TaskList> tlList = new LinkedList<TaskList>();
+		
+		for(String dbKey : jedis.keys("tdf:" + namespace + ":tasklist:*[0-9]")) {
+			TaskList tl = new TaskList(jedis, dbKey);
+			if(tl.isOverdue()) {
+				tlList.add(tl);
+			}
+		}
+		
+		return tlList;
+	}
+	
 	private Long getTaskIndexAndIncrement(String n) {
 		// Jedis incr function sets value to 1 if nonexistant
 		return jedis.incr("tdf:" + n + ":taskIndex");

@@ -39,7 +39,7 @@ PWDA=$(pwd)
 
 cd ${TARGET}/commands
 
-for command in AddNamespace AddTask AddTaskList DeleteNamespace DeleteTask DeleteTaskList ExportProcessed QueueSingleTasks Requeue Show
+for command in AddNamespace AddTask AddTaskList DeleteNamespace DeleteTask DeleteTaskList ExportProcessed QueueSingleTasks Requeue Show Timeout
 do
 #	echo -n "Press the ANY-Key to continue..."; read -n 1
 #	ln -s $(realpath $TARGET/commands/commands.sh) $TARGET/commands/${command}
