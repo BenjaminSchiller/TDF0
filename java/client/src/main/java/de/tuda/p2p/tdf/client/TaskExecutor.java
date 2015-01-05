@@ -7,6 +7,7 @@ import java.util.List;
 import org.joda.time.DateTime;
 
 import de.tuda.p2p.tdf.common.ClientTask;
+import de.tuda.p2p.tdf.common.databaseObjects.LogMessageType;
 import de.tuda.p2p.tdf.common.databaseObjects.Task;
 import de.tuda.p2p.tdf.common.databaseObjects.TaskList;
 import de.tuda.p2p.tdf.common.redisEngine.DatabaseFactory;
@@ -23,6 +24,10 @@ public class TaskExecutor extends Thread {
 	private TaskInterfaceClient taskInterface;
 	private File workingDir;
 	private String clientId;
+	
+	
+	private static boolean running = true;
+	private boolean waitingOnTasks = false; 
 
 	/**
 	 * Constructor
@@ -79,7 +84,10 @@ public class TaskExecutor extends Thread {
 	@Override
 	public void run() {
 		DateTime start = DateTime.now();
-		while (true) {
+		log(LogMessageType.CLIENT_STARTED, "");
+		waitingOnTasks = true;
+		
+		while (running) {
 			//FIXME: if namespaces given, only from those
 			TaskList taskList = null;
 			if(taskInterface.namespaces.isEmpty()) {
@@ -90,6 +98,11 @@ public class TaskExecutor extends Thread {
 				Client.logMessage("Waiting on tasks from namespaces " + taskInterface.namespaces);
 				taskList = dbFactory.getOpenTaskList(taskInterface.namespaces);
 			}
+			
+			waitingOnTasks = false;
+			
+			taskList.start();
+			this.log(LogMessageType.TASKLIST_STARTED, taskList.getDBKey());
 			
 			for(ClientTask clTask : taskList.getClientTasks()){
 										
@@ -106,6 +119,7 @@ public class TaskExecutor extends Thread {
 					taskInterface.prepareWorker(clTask);
 	
 					if (taskInterface.runSetupScript(clTask)) {
+						this.log(LogMessageType.TASK_STARTED, clTask.getDbKey());
 						taskInterface.runTask(clTask);
 					} else {
 						// wait some time
@@ -119,23 +133,47 @@ public class TaskExecutor extends Thread {
 					// wait some time
 					waitSomeTime(clTask.getWaitAfterSuccess(), waitAfterSuccess);
 					
-					if(dbFactory.doesTaskStillBelongToClient(clientId, clTask))
+					if(dbFactory.doesTaskStillBelongToClient(clientId, clTask)) {
 						dbFactory.addSuccessfulTask(clTask);
-					else 
+						this.log(LogMessageType.TASK_SUCCESSFUL, clTask.getDbKey());
+					}
+					else {
+						this.log(LogMessageType.TASK_STOLEN, clTask.getDbKey());
 						break;
+					}
+				}
+				catch (TaskTimeoutException e) {
+					if(dbFactory.doesTaskStillBelongToClient(clientId, clTask)) {
+						taskInterface.fail(clTask, e.getMessage());
+						this.log(LogMessageType.TASK_TIMED_OUT, clTask.getDbKey());
+					}
+					else {
+						this.log(LogMessageType.TASK_STOLEN, clTask.getDbKey());
+						break;
+					}		
+					// wait some time
+					waitSomeTime(clTask.getWaitAfterRunError(), waitAfterRunError);
 				}
 				catch (TaskException e) {
-					if(dbFactory.doesTaskStillBelongToClient(clientId, clTask))
+					if(dbFactory.doesTaskStillBelongToClient(clientId, clTask)) {
 						taskInterface.fail(clTask, e.getMessage());
-					else 
+						this.log(LogMessageType.TASK_FAILED, clTask.getDbKey());
+					}
+					else {
+						this.log(LogMessageType.TASK_STOLEN, clTask.getDbKey());
 						break;
+					}		
 					// wait some time
 					waitSomeTime(clTask.getWaitAfterRunError(), waitAfterRunError);
 				} catch (SetupException e) {
-					if(dbFactory.doesTaskStillBelongToClient(clientId, clTask))
-						taskInterface.fail(clTask, e.getMessage());	
-					else 
+					if(dbFactory.doesTaskStillBelongToClient(clientId, clTask)) {
+						taskInterface.fail(clTask, e.getMessage());
+						this.log(LogMessageType.TASK_FAILED, clTask.getDbKey());
+					}
+					else {
+						this.log(LogMessageType.TASK_STOLEN, clTask.getDbKey());
 						break;
+					}	
 					// wait some time
 					waitSomeTime(clTask.getWaitAfterSetupError(), waitAfterSetupError);
 				}
@@ -143,11 +181,20 @@ public class TaskExecutor extends Thread {
 					dbFactory.addProcessedTask(clTask);
 				else 
 					break;
+				
+				if(!running)
+					break;
 			}
 			
-			taskList.flush();
+			this.log(LogMessageType.TASKLIST_ENDED, taskList.getDBKey());
+			
+			if(running)
+				taskList.finish();
+				
 			
 		}
+		
+		this.log(LogMessageType.CLIENT_TERMINATING, "");
 	}
 
 	
@@ -251,4 +298,17 @@ public class TaskExecutor extends Thread {
 		}
 	}
 
+	public void log(LogMessageType type, String parameter) {
+		this.dbFactory.log(clientId, type, parameter);
+	}
+	
+	public void kill() {
+		running = false;
+		try {
+			if(!waitingOnTasks)
+				this.join();
+		} catch (InterruptedException e) {
+			System.out.println("Thread Interrupted");
+		}
+	}
 }

@@ -16,9 +16,34 @@ import de.tuda.p2p.tdf.common.redisEngine.DatabaseStringQueue;
 import redis.clients.jedis.Jedis;
 
 public class TaskList extends DatabaseStringQueue{
+	
+	private TaskListMetainformation config;
 
 	public TaskList(Jedis jedis, String dbKey) {
 		super(jedis, dbKey);
+		config = new TaskListMetainformation();
+		config.setDbKey(dbKey + ":meta");
+	}
+	
+	public void start() {
+		config.setField("started", new DateTime());
+		
+		Long totalRuntimeMS = 0L;
+		
+		for(Task t : this.getTasks()) {
+			totalRuntimeMS += (Long) t.getField("timeout");
+		}
+		
+		config.setField("maxRuntime", totalRuntimeMS);
+		saveConfig();
+	}
+	
+	public boolean isOverdue() {
+		return ((DateTime)config.getField("started")).plusMillis((Integer) config.getField("maxRuntime")).isBeforeNow();
+	}
+	
+	private void saveConfig() {
+		config.saveToDB(jedis, config.getDbKey());
 	}
 	
 	public void pushTaskKey(String taskDBkey) {
@@ -65,6 +90,9 @@ public class TaskList extends DatabaseStringQueue{
 		return tl;
 	}
 	
-	
+	public void finish() {
+		jedis.del(config.getDbKey());
+		this.flush();
+	}
 
 }

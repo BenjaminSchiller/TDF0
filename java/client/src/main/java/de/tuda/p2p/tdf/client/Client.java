@@ -55,6 +55,7 @@ public class Client {
 		try {
 			loadConfig();
 			// parse the command line options
+		
 			CommandLineParser parser = new PosixParser();
 			CommandLine cmd = null;
 
@@ -85,10 +86,15 @@ public class Client {
 			if (cmd != null && cmd.hasOption("help")) {
 				printHelp(null);
 			}
-			Thread t = new TaskExecutor(waitQueueEmpty, waitQueueExpired, waitAfterSuccess,
+			TaskExecutor t = new TaskExecutor(waitQueueEmpty, waitQueueExpired, waitAfterSuccess,
 					waitAfterSetupError, waitAfterRunError, shutdown, clientId, host,
 					port, index, auth, workingDir, namespaces);
-			t.run();
+			
+
+			ClientTerminator terminator = new ClientTerminator(t);
+			
+			Runtime.getRuntime().addShutdownHook(terminator);
+			t.start();
 		} catch (FileNotFoundException e) {
 			logError("Could not find config file 'client.properties'.");
 		} catch (URISyntaxException e) {

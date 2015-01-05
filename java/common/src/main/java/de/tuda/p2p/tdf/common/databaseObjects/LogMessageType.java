@@ -1,6 +1,6 @@
-package de.tuda.p2p.tdf.client;
+package de.tuda.p2p.tdf.common.databaseObjects;
 
-public enum LogMessages {
+public enum LogMessageType {
 	  CLIENT_STARTED("cs"),
 	  CLIENT_TERMINATING("ct"),
 	  TASKLIST_STARTED("tls"),
@@ -14,7 +14,7 @@ public enum LogMessages {
 	  
 	  private String text;
 
-	  LogMessages(String text) {
+	  LogMessageType(String text) {
 	    this.text = text;
 	  }
 
@@ -22,9 +22,9 @@ public enum LogMessages {
 	    return this.text;
 	  }
 
-	  public static LogMessages fromString(String text) {
+	  public static LogMessageType fromString(String text) {
 	    if (text != null) {
-	      for (LogMessages b : LogMessages.values()) {
+	      for (LogMessageType b : LogMessageType.values()) {
 	        if (text.equalsIgnoreCase(b.text)) {
 	          return b;
 	        }

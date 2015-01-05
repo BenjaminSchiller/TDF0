@@ -23,7 +23,7 @@ public abstract class DatabaseHashObject implements DatabaseObject{
 		return dbKey;
 	}
 
-	private void setDbKey(String dbKey) {
+	public void setDbKey(String dbKey) {
 		this.dbKey = dbKey;
 		setField("dbKey", dbKey);
 	}
@@ -111,7 +111,7 @@ public abstract class DatabaseHashObject implements DatabaseObject{
 		return sb.toString();
 	}
 	
-	protected Object getField(String name) {
+	public Object getField(String name) {
 		return fields.get(name);
 	}
 	
@@ -120,7 +120,7 @@ public abstract class DatabaseHashObject implements DatabaseObject{
 	 * @param name
 	 * @param value
 	 */
-	protected void setField(String name, Object value) {
+	public void setField(String name, Object value) {
 		fields.put(name, value);
 	}
 	
@@ -130,7 +130,7 @@ public abstract class DatabaseHashObject implements DatabaseObject{
 	 * @param value
 	 */
 	
-	protected void setField(String name, String value) {
+	public void setField(String name, String value) {
 		Class type = objectFieldDeclarations.get(name);
 		fields.put(name, type.cast(ObjectFromStringInstanciator.convertToObject(value, type)));
 	}

@@ -3,6 +3,7 @@ package de.tuda.p2p.tdf.common.redisEngine;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -17,6 +18,9 @@ import argo.saj.InvalidSyntaxException;
 
 import de.tuda.p2p.tdf.common.InvalidDatabaseKey;
 import de.tuda.p2p.tdf.common.NamespaceNotExistant;
+import de.tuda.p2p.tdf.common.databaseObjects.LogMessage;
+import de.tuda.p2p.tdf.common.databaseObjects.LogMessageQueue;
+import de.tuda.p2p.tdf.common.databaseObjects.LogMessageType;
 import de.tuda.p2p.tdf.common.databaseObjects.Namespace;
 import de.tuda.p2p.tdf.common.databaseObjects.Task;
 import de.tuda.p2p.tdf.common.databaseObjects.TaskList;
@@ -25,6 +29,7 @@ import redis.clients.jedis.Jedis;
 public class DatabaseFactory {
 	
 	private Jedis jedis;
+	private HashMap<String,LogMessageQueue> logQueues;
 	
 	public DatabaseFactory(String hostname, String port, String index, String password) {
 		if(hostname == null || hostname.isEmpty())
@@ -42,6 +47,8 @@ public class DatabaseFactory {
 		
 		if(password != null && !password.isEmpty())
 			jedis.auth(password);
+		
+		logQueues = new HashMap<String,LogMessageQueue>();
 	}
 	
 	public String addSingleTask(Task t) throws NamespaceNotExistant {
@@ -446,8 +453,19 @@ public class DatabaseFactory {
 	 * @param client name of the client as given in configuration
 	 * @param message log message
 	 */
-	public void log(String client, String message) {
-		jedis.lpush("tdf:log:" + client, message);
+	public void log(String client, LogMessageType type, String param) {
+		this.getLogMessageQueue(client).push(new LogMessage(type, param));
+	}
+	
+	private LogMessageQueue getLogMessageQueue(String client) {
+		if(logQueues.containsKey(client)) {
+			return logQueues.get(client);
+		}
+		else {
+			LogMessageQueue lmq = new LogMessageQueue(jedis, "tdf:log:" + client);
+			logQueues.put(client, lmq);
+			return lmq;
+		}
 	}
 	
 	/**
@@ -483,4 +501,5 @@ public class DatabaseFactory {
 		
 		return tn.getField("client").equals(client);
 	}
+	
 }

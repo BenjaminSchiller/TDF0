@@ -310,7 +310,7 @@ public class TaskInterfaceClient {
 		} catch (IOException e) {
 			throw new TaskException("Script failed: " + e.getMessage());
 		} catch (InterruptedException e) {
-			throw new TaskException("Worker timeout, force quit.");
+			throw new TaskTimeoutException("Worker timeout, force quit.");
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
