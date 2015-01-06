@@ -18,6 +18,7 @@ import redis.clients.jedis.Jedis;
 public class TaskList extends DatabaseStringQueue{
 	
 	private TaskListMetainformation config;
+	private boolean started = false;
 
 	public TaskList(Jedis jedis, String dbKey) {
 		super(jedis, dbKey);
@@ -27,7 +28,7 @@ public class TaskList extends DatabaseStringQueue{
 	
 	public void start() {
 		config.setField("started", new DateTime());
-		
+		started = true;
 		Long totalRuntimeMS = 0L;
 		
 		for(Task t : this.getTasks()) {
@@ -39,6 +40,8 @@ public class TaskList extends DatabaseStringQueue{
 	}
 	
 	public boolean isOverdue() {
+		if(!config.hasField("started"))
+			return false;
 		return ((DateTime)config.getField("started")).plusMillis((Integer) config.getField("maxRuntime")).isBeforeNow();
 	}
 	

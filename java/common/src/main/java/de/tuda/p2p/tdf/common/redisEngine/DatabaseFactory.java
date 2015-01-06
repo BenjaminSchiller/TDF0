@@ -16,6 +16,7 @@ import argo.jdom.JdomParser;
 import argo.jdom.JsonNode;
 import argo.saj.InvalidSyntaxException;
 
+import de.tuda.p2p.tdf.common.ClientTask;
 import de.tuda.p2p.tdf.common.InvalidDatabaseKey;
 import de.tuda.p2p.tdf.common.NamespaceNotExistant;
 import de.tuda.p2p.tdf.common.databaseObjects.LogMessage;
@@ -335,12 +336,17 @@ public class DatabaseFactory {
 		jedis.lpush("tdf:" + t.getNamespace() + ":failed", t.getDbKey());
 	}
 	
-	public Collection<String> requeueOrphanTasks() {
-		return null;
+	public void failTasklist(TaskList tl) {
+		for(ClientTask t : tl.getClientTasks()) {
+			if(!t.hasField("finished")) {
+				addTaskToFailed(t);
+			}
+		}
+		tl.finish();
 	}
 	
-	public Collection<String> requeueFailedTasks() {
-		return null;	
+	public void failTasklist(String dbKey) {
+		this.failTasklist(new TaskList(jedis, dbKey));
 	}
 	
 	public static JsonNode parseJson(String sJson) throws InvalidSyntaxException {

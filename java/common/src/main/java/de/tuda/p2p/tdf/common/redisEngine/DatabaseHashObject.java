@@ -124,6 +124,10 @@ public abstract class DatabaseHashObject implements DatabaseObject{
 		fields.put(name, value);
 	}
 	
+	public boolean hasField(String name) {
+		return fields.containsKey(name);
+	}
+	
 	/**
 	 * Set a field by its given string representation
 	 * @param name

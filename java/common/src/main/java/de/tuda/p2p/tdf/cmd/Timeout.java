@@ -20,10 +20,12 @@ public class Timeout extends CMD {
 		
 		Options options = new Options();
 		options.addOption("n", true, "Namespace");
-		options.addOption("f", false, "Fail tasks of timed out tasklists");
+		options.addOption("f", false, "Fail tasks of all timed out tasklists to run them again");
+		options.addOption("g", true, "Fail tasks of specific timed out tasklists to run them again");
 		options.addOption("h", false, "show help");
 
 		String namespace = "";
+		boolean failAll = false;
 
 
 		HelpFormatter formatter = new HelpFormatter();
@@ -38,20 +40,29 @@ public class Timeout extends CMD {
 			System.exit(-1);
 		}
 		
-		if(cmd.hasOption("h") || !cmd.hasOption("n")) {
+		if(cmd.hasOption("h") || !cmd.hasOption("n") || (cmd.hasOption("f") && cmd.hasOption("g"))) {
 			System.err.println("Missing parameter!");
-			formatter.printHelp("-n <namespace> [-f]", options);
+			formatter.printHelp("-n <namespace> [-f|-g <tasklist>]", options);
 			System.exit(-1);
 
 		}
 		else {
 			namespace = cmd.getOptionValue("n");
+			if(cmd.hasOption("f")) {
+				failAll = true;
+			}
+			if(cmd.hasOption("g")) {
+				dbFactory.failTasklist(cmd.getOptionValue("g"));
+				System.exit(0);
+			}
 		}
 		
 		try {
 			Collection<TaskList> timedoutTasklists = dbFactory.getTimedoutTaskLists(namespace);
 			for(TaskList tl : timedoutTasklists) {
 				System.out.println(tl.getDBKey());
+				if(failAll) {
+					dbFactory.failTasklist(tl); }
 			}
 		} catch (NamespaceNotExistant e) {
 			e.printStackTrace();
@@ -59,25 +70,5 @@ public class Timeout extends CMD {
 			System.exit(1);
 		}
 				
-/*		if(cmd.hasOption("e"))
-			equally = true;
-		
-		
-		Collection<TaskList> requeuedTaskLists;
-		try {
-			requeuedTaskLists = dbFactory.requeue(namespace, listsize, equally);
-			
-			for(TaskList tl : requeuedTaskLists)
-				System.out.println(tl.getDBKey());
-			
-			System.exit(0);
-			
-		} catch (NamespaceNotExistant e) {
-			e.printStackTrace();
-			System.err.println("Namespace does not exist!");
-			System.exit(1);
-		}
-*/
-
 	}
 }
