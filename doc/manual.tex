@@ -411,6 +411,32 @@ Requeue failed tasks. The tasks will be splitted to task lists similiar to \text
 
 \newpage
 
+\subsection{RetrieveClientLogs\label{cmd:RetrieveClientLogs}}
+\begin{verbatim}
+ $ RetrieveClientLogs {-c <client> [-b]} | -l 
+\end{verbatim}
+
+\subsubsection{Parameters}
+\begin{description}
+\item[-c \textit{<client>}] client of which log messages shall be received
+\item[-l] list clients that have logs available
+\item[-b] receive logs blockingly
+\end{description}
+
+\subsubsection{Output}
+They output will be linewise. Log messages have the following format:
+\begin{quote}
+\textit{<unix timestamp>}:\textit{<message type>}:\textit{<content (optional)>}
+\end{quote}
+
+Message types available can be found in the class \texttt{e.tuda.p2p.tdf.common.databaseObjects.LogMessageType}
+
+\subsubsection{Description}
+Retrieves client log messages from the database. Log messages are deleted on retrieval.
+
+\newpage
+
+
 \subsection{Show\label{cmd:Show}}
 \begin{verbatim}
  $ Show <database key>
@@ -425,15 +451,24 @@ Can be used to view content of certain database keys. It is for example useful, 
 
 \newpage
 
-\subsection{Timeout\label{cmd:timeout}}
+\subsection{Timeout\label{cmd:Timeout}}
 \begin{verbatim}
- $ Timeout -n <namespace>
+ $ Timeout -n <namespace> [-f|-g <tasklist>]
 \end{verbatim}
+
+\subsubsection{Parameters}
+\begin{description}
+\item[-n \textit{<namespace>}] specific namespace of which taskslists shall be evaluated 
+\item[-g \textit{<tasklist>}] fail all tasks which have not been run of a specific tasklist
+\item[-f] fail all tasks of timed out tasklists which have not been run yet
+\end{description}
 
 \subsubsection{Output}
 Line-by-line list of tasks which have been marked as failed because client took too long.
 
 \subsubsection{Description}
+Lists tasklists which have timed out. May be used to fail all tasks in a task list which have not been run to requeue them using the \texttt{Requeue} command (see \ref{cmd:Requeue}).
+
 \textbf{WARNING:} To use this command, you need meaningful synchronised clocks between the server and all clients. Elsewise behaviour of this command can become odd.
 
 %\subsection{command\label{cmd:Command}}

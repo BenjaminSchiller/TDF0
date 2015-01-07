@@ -39,7 +39,7 @@ PWDA=$(pwd)
 
 cd ${TARGET}/commands
 
-for command in AddNamespace AddTask AddTaskList DeleteNamespace DeleteTask DeleteTaskList ExportProcessed QueueSingleTasks Requeue Show Timeout
+for command in AddNamespace AddTask AddTaskList DeleteNamespace DeleteTask DeleteTaskList ExportProcessed QueueSingleTasks Requeue RetrieveClientLog Show Timeout
 do
 #	echo -n "Press the ANY-Key to continue..."; read -n 1
 #	ln -s $(realpath $TARGET/commands/commands.sh) $TARGET/commands/${command}
@@ -54,7 +54,7 @@ do
 	mkdir $TARGET/client${clientnum}
 	cp java/client/target/{client.properties,client.sh,tdf-client.jar} $TARGET/client${clientnum}
 	chmod 755 $TARGET/client${clientnum}/client.sh
-	sed -i "s/client.id = .*/client.id = \"client-${clientnum}\"/g" $TARGET/client${clientnum}/client.properties
+	sed -i "s/client.id = .*/client.id = client-${clientnum}/g" $TARGET/client${clientnum}/client.properties
 done
 
 #mkdir $TARGET/logserver

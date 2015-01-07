@@ -490,21 +490,28 @@ public class DatabaseFactory {
 		}
 	}
 	
-	/**
-	 * Get next log message from any client
-	 * @return
-	 */
-	public String getNextLogMessage() {
-		return getNextLogMessage(jedis.keys("tdf:log:*").toArray(new String[0]));
+	public Collection<String> listClientsWithLogs() {
+		Set<String> clients = new HashSet<String>();
+		
+		for(String key : jedis.keys("tdf:log:*")) {
+			clients.add(key.split(":")[2]);
+		}
+		
+		return clients;
 	}
 	
+
 	/**
 	 * Get next log message of a specific client
 	 * @param client name of the client as given in configuration
 	 * @return
 	 */
+	public String getNextLogMessageBlocking(String client) {
+		return jedis.brpop(0, "tdf:log:" + client).get(1);
+	}
+	
 	public String getNextLogMessage(String client) {
-		return getNextLogMessage("tdf:log:" + client);
+		return jedis.rpop("tdf:log:" + client);
 	}
 	
 	/**
@@ -512,9 +519,17 @@ public class DatabaseFactory {
 	 * @param client name of the client as given in configuration
 	 * @return
 	 */
-	private String getNextLogMessage(String... clients) {
+	/*private String getNextLogMessage(String... clients) {
 		return jedis.brpop(0, clients).get(1);
-	}
+	}*/
+	
+	/**
+	 * Get next log message from any client
+	 * @return
+	 */
+/*	public String getNextLogMessage() {
+		return getNextLogMessage(jedis.keys("tdf:log:*").toArray(new String[0]));
+	}*/
 
 	public boolean doesTaskStillBelongToClient(String client, Task t) {
 		Task tn = new Task();
