@@ -137,7 +137,7 @@ Adding task lists simply works by adding tasks as specified above but combined i
 \subsection{Managing results}
 Issueing the command \texttt{ExportProcessed} will provide you with a list of JSON-tasks that have been processed by the clients. They will contain additional fields like \textit{started} and \textit{finished}, which contain a DateTime, which specify when the task has been started or stopped, \textit{output} which specifies the output the script generated and \textit{error} which contains a non-empty string if something went wrong during execution.
 
-If you want to reschedule tasks, that have failed, you can just call the command \texttt{Requeue} to readd tasks. Those tasks are added as single task lists to the head of the queue of to be executed tasks.
+If you want to reschedule tasks, that have failed, you can just call the command \texttt{Requeue} to read tasks. Those tasks are added as single task lists to the head of the queue of to be executed tasks.
 
 \newpage
 
@@ -254,12 +254,14 @@ A JSON-List of multiple task definitions, e.g.:
 ]
 \end{verbatim}
 
+It is also possible, to add a list of multiple task lists, which will then be added individually.
+
 \subsubsection{Output}
-Returns the database key of the newly added task list.
+Returns the database key of the newly added task list. If multiple lists are added, multiple keys are returned by the order the task lists have been given.
 
 \subsubsection{Description}
-Add a list of tasks to the given namespace. If tasks of the list contain different namespaces, the namespace of the last task is considered.\\
-The task list is directly added to the queue \textbf{tdf:\textit{namespace}:queueingTaskLists} and will be ran, as soon as it hits the tail.
+Add a list of tasks or a list of task lists to the given namespace. If tasks contain different namespaces, the namespace of the very last task is considered.\\
+Task lists will be directly added to the queue \textbf{tdf:\textit{namespace}:queueingTaskLists} and will be ran, as soon as they hit the tail.
 
 \newpage
 
@@ -342,6 +344,7 @@ A document might look like this:
  "input" : "",
  "waitAfterRunError" : "100",
  "error" : "run.sh did not return 0\nhave this stderr:\n\n",
+ "output" : "Test",
  "client" : ""client-0"",
  "session" : "Students-2021-4-25",
  "waitAfterSetupError" : "100",
@@ -360,6 +363,7 @@ Compared to the input format (see \ref{cmd:AddTask}) it contains following addit
 \item[started] time when job started (DateTime, read from clients local clock)
 \item[finished] time when job finished (DateTime, read from clients local clock)
 \item[client] is the client which last worked on the task (interally also important for timeout handling)
+\item[output] contains the \texttt{stdout} that has been generated while running the script
 \end{description}
 
 
