@@ -12,6 +12,9 @@ import de.tuda.p2p.tdf.common.redisEngine.DatabaseFactory;
 
 public class AddTaskList extends CMD{
 	
+	public static String namespace = "";
+
+	
 	public static void main(String[] args){
 		init();
 		
@@ -20,22 +23,22 @@ public class AddTaskList extends CMD{
 			
 			Vector<Task> tl = new Vector<Task>();
 			
-			String namespace = "";
 			
-			for(JsonNode jn : jsonTree.getElements()) {
-				Task t = new Task();
-				try {
-					t.loadFromJson(jn);
-				} catch (InvalidSyntaxException e) {
-					System.err.println("Error Reading Json-Input!");
-					e.printStackTrace();
+			if(jsonTree.getElements().get(0).isArrayNode()) {
+				for(JsonNode sublist : jsonTree.getElements()) {
+					TaskList taskl = dbFactory.generateTaskList(createTaskList(sublist), namespace);
+					say(taskl.getDBKey());
 				}
-				tl.add(t);
-				namespace = t.getNamespace();
+				System.exit(0);
 			}
 			
-			TaskList taskl = dbFactory.generateTaskList(tl, namespace);
-			say(taskl.getDBKey());
+			else {
+				TaskList taskl = dbFactory.generateTaskList(createTaskList(jsonTree), namespace);
+				say(taskl.getDBKey());
+			}
+			
+			System.exit(0);
+
 		} catch (InvalidSyntaxException e) {
 			System.err.println("Error Reading Json-Input!");
 			e.printStackTrace();
@@ -44,6 +47,19 @@ public class AddTaskList extends CMD{
 			System.err.println("Namespace does not exist!");
 			System.exit(1);
 		}
+	}
+	
+	public static Vector<Task> createTaskList(JsonNode jsonTree) throws InvalidSyntaxException {
+		Vector<Task> tl = new Vector<Task>();
+
+		for(JsonNode jn : jsonTree.getElements()) {
+			Task t = new Task();
+			t.loadFromJson(jn);
+			
+			tl.add(t);
+			namespace = t.getNamespace();
+		}
+		return tl;
 	}
 
 }

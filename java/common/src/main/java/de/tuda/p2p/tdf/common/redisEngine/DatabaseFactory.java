@@ -25,6 +25,7 @@ import de.tuda.p2p.tdf.common.databaseObjects.LogMessageType;
 import de.tuda.p2p.tdf.common.databaseObjects.Namespace;
 import de.tuda.p2p.tdf.common.databaseObjects.Task;
 import de.tuda.p2p.tdf.common.databaseObjects.TaskList;
+import de.tuda.p2p.tdf.common.databaseObjects.TaskListMetainformation;
 import redis.clients.jedis.Jedis;
 
 public class DatabaseFactory {
@@ -434,7 +435,14 @@ public class DatabaseFactory {
 			throw new NamespaceNotExistant();
 		
 		switch(dbPath[2]) {
-			case "tasklist":	
+			case "tasklist":
+				if(dbPath.length == 5) { //in case meta information has to be shown
+					TaskListMetainformation tlm = new TaskListMetainformation();
+					tlm.loadFromDB(jedis, key);
+					
+					output.append(tlm.toJson());
+					break;
+				}
 			case "unmergedTasks":
 			case "failed":
 			case "processed":
@@ -458,7 +466,6 @@ public class DatabaseFactory {
 				task.loadFromDB(jedis, key);
 				
 				output.append(task.toJson());
-				
 				break;
 				
 			default:
