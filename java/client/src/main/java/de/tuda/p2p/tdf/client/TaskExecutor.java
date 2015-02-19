@@ -122,9 +122,10 @@ public class TaskExecutor extends Thread {
 				try {
 					clTask.setBaseDir(workingDir);
 					taskInterface.prepareWorker(clTask);
-	
+					
+					this.log(LogMessageType.TASK_STARTED, clTask.getDbKey());
+					
 					if (taskInterface.runSetupScript(clTask)) {
-						this.log(LogMessageType.TASK_STARTED, clTask.getDbKey());
 						taskInterface.runTask(clTask);
 					} else {
 						// wait some time
