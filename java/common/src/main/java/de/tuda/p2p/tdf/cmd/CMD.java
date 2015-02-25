@@ -34,9 +34,10 @@ public abstract class CMD {
 	public static void init() {
 
 		try {
-             dbFactory = loadConfig();
-        }
-        catch (FileNotFoundException e) {
+	
+			dbFactory = loadConfig(CMD.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
+		}
+		catch (FileNotFoundException e) {
 			System.err.println("Could not find config file 'cmd.properties'.");
 			System.exit(29);
 		} catch (URISyntaxException e) {
@@ -70,10 +71,10 @@ public abstract class CMD {
 	 *             Thrown if information in the configuration file is missing or
 	 *             can not be parsed
 	 */
-	private static DatabaseFactory loadConfig() throws URISyntaxException,
+	private static DatabaseFactory loadConfig(String path) throws URISyntaxException,
 			FileNotFoundException, IOException, ConfigurationException {
 
-		File configFile = new File("./", "cmd.properties");
+		File configFile = new File(path, "cmd.properties");
 
 		Properties config = new Properties();
 		System.err.println("Using config file: " + configFile.getCanonicalPath());
