@@ -31,6 +31,8 @@ export TARGET=${1%/}
 
 mkdir $TARGET/commands
 
+cp -r stats $TARGET/
+
 cp java/common/target/{commands.jar,cmd.properties,commands.sh} $TARGET/commands
 
 chmod 755 $TARGET/commands/commands.sh
