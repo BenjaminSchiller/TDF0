@@ -199,8 +199,6 @@ public class TaskExecutor extends Thread {
 				
 			
 		}
-		
-		this.log(LogMessageType.CLIENT_TERMINATING, "");
 	}
 
 	
@@ -311,8 +309,11 @@ public class TaskExecutor extends Thread {
 	public void kill() {
 		running = false;
 		try {
-			if(!waitingOnTasks)
-				this.join();
+			if(waitingOnTasks){
+				this.dbFactory.killJedisTasks();
+			}
+			this.join();
+			this.log(LogMessageType.CLIENT_TERMINATING, "");
 		} catch (InterruptedException e) {
 			System.out.println("Thread Interrupted");
 		}

@@ -2,6 +2,7 @@ package de.tuda.p2p.tdf.common.databaseObjects;
 
 public enum LogMessageType {
 	  CLIENT_STARTED("cs"),
+	  // Client received signal to shut down
 	  CLIENT_TERMINATING("ct"),
 	  TASKLIST_STARTED("tls"),
 	  TASKLIST_ENDED("tle"),

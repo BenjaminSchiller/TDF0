@@ -488,8 +488,7 @@ public class DatabaseFactory {
 	
 	private LogMessageQueue getLogMessageQueue(String client) {
 		if(logQueues.containsKey(client)) {
-			return logQueues.get(client);
-		}
+			return logQueues.get(client);}
 		else {
 			LogMessageQueue lmq = new LogMessageQueue(jedis, "tdf:log:" + client);
 			logQueues.put(client, lmq);
@@ -544,6 +543,11 @@ public class DatabaseFactory {
 		tn.loadFromDB(jedis, t.getDbKey());
 		
 		return tn.getField("client").equals(client);
+	}
+	
+	public void killJedisTasks() {
+		jedis.disconnect();
+		jedis.connect();
 	}
 	
 }

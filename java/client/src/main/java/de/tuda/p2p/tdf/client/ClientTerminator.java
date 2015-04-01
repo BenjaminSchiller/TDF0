@@ -1,5 +1,7 @@
 package de.tuda.p2p.tdf.client;
 
+import de.tuda.p2p.tdf.common.databaseObjects.LogMessageType;
+
 public class ClientTerminator extends Thread {
 	private TaskExecutor te;
 	
